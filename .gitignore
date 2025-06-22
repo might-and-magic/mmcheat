@@ -24,7 +24,7 @@ Scripts/Modules/*
 Scripts/Modules/MMCheat/conf.ini
 Scripts/Modules/MMCheat/coords.txt
 
-!misc/
+!intro_imgs/
 !tools/
 
 !.vscode/
