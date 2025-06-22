@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Might and Magic 6/7/8 Indoor 2D Map Viewer (for MMCheat)</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 2.5em;
+        font-weight: 300;
+      }
+
+      .header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1em;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .upload-section {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 30px;
+        border: 3px dashed #ddd;
+        border-radius: 10px;
+        background: #fafafa;
+        transition: all 0.3s ease;
+      }
+
+      .upload-section:hover {
+        border-color: #4facfe;
+        background: #f0f8ff;
+      }
+
+      .upload-section.dragover {
+        border-color: #4facfe;
+        background: #e6f3ff;
+        transform: scale(1.02);
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .upload-btn {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1em;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 10px;
+      }
+
+      .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+      }
+
+      .controls {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .control-group label {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .control-group select,
+      .control-group input {
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s ease;
+      }
+
+      .control-group select:focus,
+      .control-group input:focus {
+        outline: none;
+        border-color: #4facfe;
+      }
+
+      .map-container {
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .map-container svg {
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+      }
+
+      .info-panel {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      .info-panel h3 {
+        margin-top: 0;
+        color: #333;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .info-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #4facfe;
+      }
+
+      .info-item strong {
+        display: block;
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-item span {
+        display: block;
+        font-size: 1.2em;
+        color: #333;
+        margin-top: 5px;
+      }
+
+      .error {
+        background: #ffe6e6;
+        color: #d63031;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #d63031;
+        margin: 20px 0;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4facfe;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Might and Magic 6/7/8 Indoor 2D Map Viewer</h1>
+        <p>Upload MMCheat's indoor2dmap.bin file to view indoor maps</p>
+      </div>
+
+      <div class="content">
+        <div class="upload-section" id="uploadSection">
+          <h3>📁 Upload indoor2dmap.bin file</h3>
+          <p>Drag and drop your file here or click to browse</p>
+          <input type="file" id="fileInput" class="file-input" accept=".bin" />
+          <button
+            class="upload-btn"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            Choose File
+          </button>
+        </div>
+
+        <div id="controls" class="controls hidden">
+          <div class="control-group">
+            <label for="mapSelect">Select Map:</label>
+            <select id="mapSelect">
+              <option value="">Choose a map...</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="strokeWidth">Stroke Width:</label>
+            <input type="number" id="strokeWidth" value="18" min="1" max="20" />
+          </div>
+
+          <div class="control-group">
+            <label for="maxSize">Max Size:</label>
+            <input
+              type="number"
+              id="maxSize"
+              value="800"
+              min="100"
+              max="2000"
+            />
+          </div>
+
+          <div class="control-group">
+            <label for="padding">Padding:</label>
+            <input type="number" id="padding" value="50" min="0" max="500" />
+          </div>
+        </div>
+
+        <div id="mapContainer" class="map-container hidden">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading map...</p>
+          </div>
+        </div>
+
+        <div id="infoPanel" class="info-panel hidden">
+          <h3>Map Information</h3>
+          <div class="info-grid" id="infoGrid">
+            <!-- Info items will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      class Indoor2DMapParser {
+        constructor() {
+          this.header = {};
+          this.data = null;
+        }
+
+        // Read unsigned 16-bit integer (little endian)
+        readU16(dataView, offset) {
+          return dataView.getUint16(offset, true);
+        }
+
+        // Read unsigned 8-bit integer
+        readU8(dataView, offset) {
+          return dataView.getUint8(offset);
+        }
+
+        // Read unsigned 32-bit integer (little endian)
+        readU32(dataView, offset) {
+          return dataView.getUint32(offset, true);
+        }
+
+        // Read signed 16-bit integer (little endian)
+        readI16(dataView, offset) {
+          return dataView.getInt16(offset, true);
+        }
+
+        // Read string from buffer
+        readString(dataView, offset, length) {
+          const bytes = new Uint8Array(dataView.buffer, offset, length);
+          return new TextDecoder().decode(bytes);
+        }
+
+        parseHeader(arrayBuffer) {
+          const dataView = new DataView(arrayBuffer);
+          let offset = 0;
+
+          // Read map count (u16, little endian)
+          const mapCount = this.readU16(dataView, offset);
+          offset += 2;
+
+          this.header = {};
+
+          // Read exactly mapCount entries
+          for (let i = 0; i < mapCount; i++) {
+            // Read string length (u8)
+            const nameLength = this.readU8(dataView, offset);
+            offset += 1;
+
+            // Read map name (char[])
+            const mapName = this.readString(dataView, offset, nameLength);
+            offset += nameLength;
+
+            // Read data offset (u32, little endian)
+            const dataOffset = this.readU32(dataView, offset);
+            offset += 4;
+
+            // Read data length (u32, little endian)
+            const dataLength = this.readU32(dataView, offset);
+            offset += 4;
+
+            this.header[mapName] = {
+              offset: dataOffset,
+              length: dataLength,
+            };
+          }
+
+          return this.header;
+        }
+
+        loadMap(arrayBuffer, mapName, invertedYAxis = true) {
+          if (!this.header[mapName]) {
+            return null;
+          }
+
+          const dataView = new DataView(arrayBuffer);
+          const mapInfo = this.header[mapName];
+          let offset = mapInfo.offset;
+
+          // Read bounds (i16, little endian)
+          const minX = this.readI16(dataView, offset);
+          offset += 2;
+          const minY = this.readI16(dataView, offset);
+          offset += 2;
+          const maxX = this.readI16(dataView, offset);
+          offset += 2;
+          const maxY = this.readI16(dataView, offset);
+          offset += 2;
+
+          // Calculate number of lines
+          const remainingBytes = mapInfo.length - 8; // 4 i16 values for bounds
+          const numLines = remainingBytes / 8; // 4 i16 values per line
+
+          const lines = [];
+          for (let i = 0; i < numLines; i++) {
+            const x1 = this.readI16(dataView, offset);
+            offset += 2;
+            const y1 = invertedYAxis
+              ? -this.readI16(dataView, offset)
+              : this.readI16(dataView, offset);
+            offset += 2;
+            const x2 = this.readI16(dataView, offset);
+            offset += 2;
+            const y2 = invertedYAxis
+              ? -this.readI16(dataView, offset)
+              : this.readI16(dataView, offset);
+            offset += 2;
+
+            lines.push({ x1, y1, x2, y2 });
+          }
+
+          return {
+            minX: minX,
+            minY: invertedYAxis ? -maxY : minY,
+            maxX: maxX,
+            maxY: invertedYAxis ? -minY : maxY,
+            lines: lines,
+          };
+        }
+
+        generateSVG(map, strokeWidth = 2, maxNominalSize = 800, padding = 50) {
+          if (!map) return null;
+
+          // For SVG, we need to flip the Y-axis (SVG Y increases downward)
+          const minX = map.minX;
+          const minY = -map.maxY; // Flip Y
+          const maxX = map.maxX;
+          const maxY = -map.minX; // Flip Y
+          const lines = map.lines;
+
+          const paddedMinX = minX - padding;
+          const paddedMaxX = maxX + padding;
+          const paddedMinY = minY - padding;
+          const paddedMaxY = maxY + padding;
+
+          let width, height;
+          const coordWidth = paddedMaxX - paddedMinX;
+          const coordHeight = paddedMaxY - paddedMinY;
+
+          if (maxNominalSize <= 0) {
+            width = coordWidth;
+            height = coordHeight;
+          } else {
+            if (coordWidth > coordHeight) {
+              width = maxNominalSize;
+              height = maxNominalSize * (coordHeight / coordWidth);
+            } else {
+              width = maxNominalSize * (coordWidth / coordHeight);
+              height = maxNominalSize;
+            }
+          }
+
+          let svg = '<?xml version="1.0" encoding="UTF-8"?>\n';
+          svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${paddedMinX} ${paddedMinY} ${coordWidth} ${coordHeight}">\n`;
+          svg += `<g stroke="black" stroke-width="${strokeWidth}" fill="none" stroke-linecap="round">\n`;
+
+          for (const line of lines) {
+            // Flip Y coordinates for SVG
+            svg += `<line x1="${line.x1}" y1="${-line.y1}" x2="${
+              line.x2
+            }" y2="${-line.y2}" />\n`;
+          }
+
+          svg += "</g>\n";
+          svg += "</svg>\n";
+
+          return svg;
+        }
+      }
+
+      // Global variables
+      let parser = null;
+      let currentArrayBuffer = null;
+
+      // DOM elements
+      const uploadSection = document.getElementById("uploadSection");
+      const fileInput = document.getElementById("fileInput");
+      const controls = document.getElementById("controls");
+      const mapSelect = document.getElementById("mapSelect");
+      const mapContainer = document.getElementById("mapContainer");
+      const infoPanel = document.getElementById("infoPanel");
+      const infoGrid = document.getElementById("infoGrid");
+
+      // Event listeners
+      fileInput.addEventListener("change", handleFileSelect);
+
+      // Drag and drop functionality
+      uploadSection.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadSection.classList.add("dragover");
+      });
+
+      uploadSection.addEventListener("dragleave", () => {
+        uploadSection.classList.remove("dragover");
+      });
+
+      uploadSection.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadSection.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+
+      // Control change listeners
+      mapSelect.addEventListener("change", updateMap);
+      document
+        .getElementById("strokeWidth")
+        .addEventListener("input", updateMap);
+      document.getElementById("maxSize").addEventListener("input", updateMap);
+      document.getElementById("padding").addEventListener("input", updateMap);
+
+      function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+          handleFile(file);
+        }
+      }
+
+      function handleFile(file) {
+        if (!file.name.toLowerCase().includes("indoor2dmap.bin")) {
+          showError("Please select an indoor2dmap.bin file");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            currentArrayBuffer = e.target.result;
+            parser = new Indoor2DMapParser();
+            const header = parser.parseHeader(currentArrayBuffer);
+
+            // Populate map selector
+            mapSelect.innerHTML = '<option value="">Choose a map...</option>';
+            Object.keys(header)
+              .sort()
+              .forEach((mapName) => {
+                const option = document.createElement("option");
+                option.value = mapName;
+                option.textContent = mapName;
+                mapSelect.appendChild(option);
+              });
+
+            controls.classList.remove("hidden");
+            showMessage(
+              `Successfully loaded ${Object.keys(header).length} maps`
+            );
+          } catch (error) {
+            showError("Error parsing file: " + error.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function updateMap() {
+        const selectedMap = mapSelect.value;
+        if (!selectedMap || !parser || !currentArrayBuffer) return;
+
+        const strokeWidth =
+          parseInt(document.getElementById("strokeWidth").value) || 2;
+        const maxSize =
+          parseInt(document.getElementById("maxSize").value) || 800;
+        const padding =
+          parseInt(document.getElementById("padding").value) || 50;
+
+        try {
+          const map = parser.loadMap(currentArrayBuffer, selectedMap, true);
+          if (!map) {
+            showError("Failed to load map data");
+            return;
+          }
+
+          const svg = parser.generateSVG(map, strokeWidth, maxSize, padding);
+          if (!svg) {
+            showError("Failed to generate SVG");
+            return;
+          }
+
+          // Display SVG
+          mapContainer.innerHTML = svg;
+          mapContainer.classList.remove("hidden");
+
+          // Update info panel
+          updateInfoPanel(map, selectedMap);
+          infoPanel.classList.remove("hidden");
+        } catch (error) {
+          showError("Error generating map: " + error.message);
+        }
+      }
+
+      function updateInfoPanel(map, mapName) {
+        infoGrid.innerHTML = `
+                <div class="info-item">
+                    <strong>Map Name</strong>
+                    <span>${mapName}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Bounds</strong>
+                    <span>(${map.minX}, ${map.minY}) to (${map.maxX}, ${
+          map.maxY
+        })</span>
+                </div>
+                <div class="info-item">
+                    <strong>Width</strong>
+                    <span>${map.maxX - map.minX}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Height</strong>
+                    <span>${map.maxY - map.minY}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Lines</strong>
+                    <span>${map.lines.length}</span>
+                </div>
+            `;
+      }
+
+      function showError(message) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error";
+        errorDiv.textContent = message;
+        document
+          .querySelector(".content")
+          .insertBefore(
+            errorDiv,
+            document.querySelector(".content").firstChild
+          );
+
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 5000);
+      }
+
+      function showMessage(message) {
+        const messageDiv = document.createElement("div");
+        messageDiv.style.cssText = `
+                background: #e8f5e8;
+                color: #27ae60;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #27ae60;
+                margin: 20px 0;
+            `;
+        messageDiv.textContent = message;
+        document
+          .querySelector(".content")
+          .insertBefore(
+            messageDiv,
+            document.querySelector(".content").firstChild
+          );
+
+        setTimeout(() => {
+          messageDiv.remove();
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>

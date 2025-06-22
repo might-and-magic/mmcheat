@@ -1,0 +1,30 @@
+# Ignore everything
+/*
+
+# But
+!.gitignore
+!.gitattributes
+!.editorconfig
+!README.md
+!LICENSE.md
+!CREDIT.md
+!extract_build.cmd
+
+!Scripts/
+Scripts/*
+!Scripts/General/
+Scripts/General/*
+!Scripts/General/MMCheat.lua
+
+!Scripts/Modules/
+Scripts/Modules/*
+!Scripts/Modules/iup.lua
+
+!Scripts/Modules/MMCheat/
+Scripts/Modules/MMCheat/conf.ini
+Scripts/Modules/MMCheat/coords.txt
+
+!misc/
+!tools/
+
+!.vscode/

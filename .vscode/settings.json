@@ -1,0 +1,31 @@
+{
+  "editor.formatOnSave": true,
+  "Lua.diagnostics.disable": ["unbalanced-assignments"],
+  "Lua.diagnostics.globals": [
+    "Party",
+    "Map",
+    "Game",
+    "mem",
+    "const",
+    "vars",
+    "evt",
+    "events",
+    "Mouse",
+    "Keys",
+    "SplitSkill",
+    "JoinSkill",
+    "EnumAvailableSkills",
+    "DBCS",
+    "Merge",
+    "NPCFollowers",
+    "TownPortalControls",
+    "SummonMonster",
+    "CastSpellDirect",
+    "MessageBox",
+    "dump",
+    "structs",
+    "tget",
+    "Timer",
+    "RemoveTimer"
+  ]
+}
