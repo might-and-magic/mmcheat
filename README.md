@@ -84,9 +84,11 @@ All images displayed in MMCheat are read directly from the game's memory, except
 
 Right-click on the map image to save it as a BMP/SVG file or view image information. Outdoor maps are saved as BMP files, while indoor maps can be saved as either SVG or BMP files. The "image info" window displays the file name, width, height, map coordinate (X, Y) range, and map size.
 
+#### Hidden feature: Batch save all maps
+
 ![Map Tab (Save Image)](intro_imgs/1.3.png)
 
-**Hidden feature: Batch save all maps.** To save all maps at once, select any _NWC_ dungeon map (one NWC map exists in each of MM6, 7, and 8, MMMerge has all three NWC maps), right-click and choose save image, then type one of the following as the filename:
+To save all maps at once, select any _NWC_ dungeon map (one NWC map exists in each of MM6, 7, and 8, MMMerge has all three NWC maps), right-click and choose save image, then type one of the following as the filename:
 
 - `@allindoorsvg` - Save all indoor maps as SVG files
 - `@allindoorbmp` - Save all indoor maps as BMP files
@@ -101,7 +103,7 @@ MMCheat will save all maps in the selected format to your chosen directory.
 ```
 
 - **STROKE_WIDTH**: Thickness of the SVG lines (default: 10)
-- **MAX_NOMINAL_SIZE**: Fixed maximum width or height of the SVG output in pixels. If ≤ 0, uses the actual coordinate width and height (default: 1024)
+- **MAX_NOMINAL_SIZE**: Fixed maximum width or height of the SVG output in pixels. If ≤ 0, uses the actual coordinate width and height (default: 1024) (note that it's just a nominal size, SVG is a vector format and can be scaled to any size)
 - **PADDING**: Border padding in game coordinate units (default: 100)
 
 ```
@@ -213,7 +215,7 @@ The 3 levels of Poison and Diseased can be considered different conditions shari
 
 ![Party Tab](intro_imgs/4.png)
 
-Fame is _floor(total_experience / 1000)_ in MM6 and 7, and _floor(main_character_experience / 250)_ in MM8. You need to change characters' experience to change the fame value, so it is not listed in MMMerge.
+Fame is _floor(total_experience / 1000)_ in MM6 and 7, and _floor(main_character_experience / 250)_ in MM8. You need to change characters' experience to change the fame value, so it is not listed in MMCheat.
 
 Attack recovery time change is not persistent; it will be reset after game reload or exit. "Use minimum for melee & shooting" is for all characters (in the party). Shooting minimum recovery time is fixed at 0; only Melee minimum recovery time is changeable.
 
