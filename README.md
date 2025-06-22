@@ -12,11 +12,11 @@ _Keywords: cheat, trainer, tool, helper, cheater, teleporter, map viewer, charac
 
 ### MM6/7/8
 
-For the standard versions of _Might and Magic 6_, _7_, or _8_ RPG games, you need to:
+For the standard (CD/GOG/Uplay) versions of _Might and Magic 6_, _7_, or _8_ RPG games, you need to:
 
 1. Download and apply the [GrayFace Patch](https://grayface.github.io/mm/#GrayFace-MM6-Patch) for your game
-2. Download MMExtension 2.3 and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
-3. Download MMCheat and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
+2. Download [MMExtension 2.3](https://github.com/might-and-magic/mmcheat/releases/download/v1.0.0/MMExtension-2.3-20250115.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
+3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.0.0/MMCheat-1.0.0.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
 
 _You must use the link above to download MMExtension 2.3 fetched from its [GitHub repository](https://github.com/GrayFace/MMExtension) instead of its [web page](https://grayface.github.io/mm/ext/) which still has the outdated v2.2 version._
 
@@ -24,7 +24,7 @@ _You must use the link above to download MMExtension 2.3 fetched from its [GitHu
 
 The [Might and Magic Merge](https://www.celestialheavens.com/forum/topic/16657) is a mod based on the _Might and Magic 8_ GrayFace patch and MMExtension. You must use the **latest MMMerge** version which includes MMExtension 2.3. MMCheat can be used directly with it:
 
-1. Download MMCheat and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
+1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.0.0/MMCheat-1.0.0.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
 
 ## Important General Notes
 
