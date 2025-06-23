@@ -1,5 +1,4 @@
 local ffi = require("ffi")
-local iup = require("iup")
 local i18n = require("MMCheat/i18n/i18n")
 
 local M = {}

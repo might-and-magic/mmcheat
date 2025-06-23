@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat：マイト・アンド・マジック6/7/8/Merge チート",
+	title = "マイト・アンド・マジック6/7/8/Merge チート",
 	let_s_go = "行きましょう！",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "キャラクター選択",
 	apply_changes_below = "以下のすべての変更を適用",
+	apply_changes_below_tip = "以下のすべてのサブタブの変更を適用します（\"%s\"と\"%s\"を除く）",
 
 	-- Map tab
 	reveal_map = "マップ全体を表示",

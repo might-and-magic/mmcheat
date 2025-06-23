@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat：魔法门6/7/8及整合版万能作弊修改器",
+	title = "魔法门6/7/8及整合版万能作弊修改器",
 	let_s_go = "开始传送！",
 	ok = "确定",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "选择角色",
 	apply_changes_below = "应用以下所有更改",
+	apply_changes_below_tip = "应用以下所有子标签页的更改，除了“%s”和“%s”",
 
 	-- Map tab
 	reveal_map = "显示整张地图",

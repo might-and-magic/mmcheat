@@ -61,7 +61,7 @@ local function main()
 	local lazy_tabs = lazytabs(tabs)
 
 	local dlg = ui.dialog(lazy_tabs, {
-		TITLE = i18n._("title") .. " v" .. about.version
+		TITLE = about.short_name .. i18n._("colon") .. i18n._("title") .. " v" .. about.version
 	})
 
 	iup.ShowXY(dlg, iup.CENTER, iup.CENTER)

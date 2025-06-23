@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Вибрати персонажа",
 	apply_changes_below = "Застосувати Всі Зміни Нижче",
+	apply_changes_below_tip = "Застосувати зміни у всіх підвкладках нижче, крім \"%s\" та \"%s\"",
 
 	-- Map tab
 	reveal_map = "Показати всю карту",

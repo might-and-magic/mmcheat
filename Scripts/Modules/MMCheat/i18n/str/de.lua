@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: Might and Magic 6/7/8/Merge Schummeln",
+	title = "Might and Magic 6/7/8/Merge Schummeln",
 	let_s_go = "Los geht's!",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Charakter auswählen",
 	apply_changes_below = "Alle Änderungen Unten Anwenden",
+	apply_changes_below_tip = "Änderungen in allen Unter-Tabs unten anwenden, außer \"%s\" und \"%s\"",
 
 	-- Map tab
 	reveal_map = "Gesamte Karte aufdecken",

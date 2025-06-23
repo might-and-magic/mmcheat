@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: 마이트 앤 매직 6/7/8/Merge 치트",
+	title = "마이트 앤 매직 6/7/8/Merge 치트",
 	let_s_go = "시작하자!",
 	ok = "확인",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "캐릭터 선택",
 	apply_changes_below = "아래 모든 변경 사항 적용",
+	apply_changes_below_tip = "아래 모든 하위 탭의 변경 사항을 적용합니다 (\"%s\" 및 \"%s\" 제외)",
 
 	-- Map tab
 	reveal_map = "전체 지도 표시",

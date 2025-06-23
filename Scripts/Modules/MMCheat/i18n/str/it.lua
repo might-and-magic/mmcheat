@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: Might and Magic 6/7/8/Merge Trucchi",
+	title = "Might and Magic 6/7/8/Merge Trucchi",
 	let_s_go = "Andiamo!",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Seleziona Personaggio",
 	apply_changes_below = "Applica Tutte le Modifiche Sottostanti",
+	apply_changes_below_tip = "Applica le modifiche in tutte le schede secondarie sottostanti eccetto \"%s\" e \"%s\"",
 
 	-- Map tab
 	reveal_map = "Rivela mappa completa",

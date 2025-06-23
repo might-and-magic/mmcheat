@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: Might and Magic 6/7/8/Merge Trajes",
+	title = "Might and Magic 6/7/8/Merge Trajes",
 	let_s_go = "Vamos lá!",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Selecionar Personagem",
 	apply_changes_below = "Aplicar Todas as Alterações Abaixo",
+	apply_changes_below_tip = "Aplicar alterações em todas as sub-abas abaixo exceto \"%s\" e \"%s\"",
 
 	-- Map tab
 	reveal_map = "Revelar mapa inteiro",

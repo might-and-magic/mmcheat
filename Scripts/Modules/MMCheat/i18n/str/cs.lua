@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: Might and Magic 6/7/8/Merge Cheaty",
+	title = "Might and Magic 6/7/8/Merge Cheaty",
 	let_s_go = "Jdeme na to!",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Vybrat postavu",
 	apply_changes_below = "Použít Všechny Změny Níže",
+	apply_changes_below_tip = "Použít změny ve všech podkartách níže kromě \"%s\" a \"%s\"",
 
 	-- Map tab
 	reveal_map = "Odkrýt celou mapu",

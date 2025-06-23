@@ -1,5 +1,5 @@
 return {
-	title = "MMCheat: Might and Magic 6/7/8/Merge Чит",
+	title = "Might and Magic 6/7/8/Merge Чит",
 	let_s_go = "Поехали!",
 	ok = "OK",
 
@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Выбрать персонажа",
 	apply_changes_below = "Применить Все Изменения Ниже",
+	apply_changes_below_tip = "Применить изменения во всех подвкладках ниже, кроме \"%s\" и \"%s\"",
 
 	-- Map tab
 	reveal_map = "Показать всю карту",

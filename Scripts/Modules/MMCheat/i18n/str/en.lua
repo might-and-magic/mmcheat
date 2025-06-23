@@ -57,6 +57,7 @@ return {
 	-- Characters tab
 	select_character = "Select Character",
 	apply_changes_below = "Apply All Changes Below",
+	apply_changes_below_tip = "Apply changes in all sub-tabs below except \"%s\" and \"%s\"",
 
 	-- Map tab
 	reveal_map = "Reveal entire map",

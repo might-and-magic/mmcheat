@@ -75,7 +75,8 @@ function M.create()
 
 	local apply_button = ui.button(i18n._("apply_changes_below"), nil, {
 		FGCOLOR = ui.apply_button_color,
-		MINSIZE = "180x"
+		MINSIZE = "180x",
+		TIP = i18n._("apply_changes_below_tip", i18n._("active_spells"), i18n._("items"))
 	})
 
 	iup.SetCallback(apply_button, "ACTION", function()
