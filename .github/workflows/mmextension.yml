@@ -34,12 +34,15 @@ jobs:
 
       - name: Compare with the recorded snapshot
         id: check
-        run: tools/mmextension.sh check | tee -a "$GITHUB_OUTPUT"
+        run: |
+          set -o pipefail   # a failing script must fail the step, not be masked by tee
+          tools/mmextension.sh check | tee -a "$GITHUB_OUTPUT"
 
       - name: Package the new snapshot
         id: fetch
         if: steps.check.outputs.MMEXT_STATUS == 'outdated'
         run: |
+          set -o pipefail
           tools/mmextension.sh fetch ${{ inputs.publish && '--update-env' || '' }} \
             | tee -a "$GITHUB_OUTPUT"
 
