@@ -42,13 +42,13 @@ usage() {
 	cat <<'EOF'
 Check for and package MMExtension snapshots for MMCheat users.
 
+  mmextension.sh                      package upstream HEAD into dist/
+  mmextension.sh --commit SHA         package a specific commit
+  mmextension.sh --update-env         package it and record it as ours
   mmextension.sh check                is upstream newer than what we ship?
-  mmextension.sh fetch                package upstream HEAD
-  mmextension.sh fetch --commit SHA   package a specific commit
-  mmextension.sh fetch --update-env   also record the new snapshot
 
-Only "fetch" writes anything: it puts the zip in dist/. "check" just prints
-how the recorded snapshot compares with upstream.
+"fetch" may be written out before the options; "check" writes nothing, it
+only prints how the recorded snapshot compares with upstream.
 
 On Windows run tools\mmextension.ps1 with the same arguments.
 EOF
@@ -187,12 +187,22 @@ cmd_fetch() {
 	echo "MMEXT_ZIP=$_zip"
 }
 
-[ $# -gt 0 ] || usage 1
-cmd="$1"
-shift
-case "$cmd" in
-check) cmd_check "$@" ;;
-fetch) cmd_fetch "$@" ;;
+# packaging a snapshot is what this is normally used for, so it is the default
+if [ $# -eq 0 ]; then
+	cmd_fetch
+	exit 0
+fi
+
+case "$1" in
+check)
+	shift
+	cmd_check "$@"
+	;;
+fetch)
+	shift
+	cmd_fetch "$@"
+	;;
 -h | --help | help) usage ;;
-*) die "unknown command: $cmd (try --help)" ;;
+--*) cmd_fetch "$@" ;; # options given without the "fetch" word
+*) die "unknown command: $1 (try --help)" ;;
 esac
