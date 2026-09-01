@@ -15,7 +15,7 @@ _Keywords: cheat, trainer, tool, helper, cheater, teleporter, map viewer, charac
 For the standard (CD/GOG/Uplay) versions of _Might and Magic 6_, _7_, or _8_ RPG games, you need to:
 
 1. Download and apply the [GrayFace Patch](https://grayface.github.io/mm/#GrayFace-MM6-Patch) for your game
-2. Download [MMExtension 2.3](https://github.com/might-and-magic/mmcheat/releases/download/v1.0.0/MMExtension-2.3-20250115.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
+2. Download [MMExtension 2.3](https://github.com/might-and-magic/mmcheat/releases/download/mmextension/MMExtension-2.3-20260406.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
 3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.1.0/MMCheat-1.1.0.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
 
 _You must use the link above to download MMExtension 2.3 fetched from its [GitHub repository](https://github.com/GrayFace/MMExtension) instead of its [web page](https://grayface.github.io/mm/ext/) which still has the outdated v2.2 version._
