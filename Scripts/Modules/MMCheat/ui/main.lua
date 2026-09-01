@@ -97,17 +97,29 @@ local function main()
 	-- dialog closes, resume game
 	-- Game.DoResume()
 
+	-- CRITICAL: IUP ends its message loop by posting WM_QUIT (IupExitLoop).
+	-- During the teardown below, hiding/destroying the last visible dialog
+	-- makes IUP call IupExitLoop again - but our loop has already returned,
+	-- so nobody consumes that WM_QUIT and it stays in the thread queue. The
+	-- GAME's own message loop then receives it and the game quits silently
+	-- (this looked like a crash: any "apply and close" button ended the game).
+	-- The EXITLOOP global tells IupExitLoop to not post when no IUP loop is
+	-- running; IupClose resets it, so the next session gets the default again.
+	iup.SetGlobal("EXITLOOP", "NO")
+
+	-- when the loop was left via IUP_CLOSE from a button the dialog is still
+	-- visible here; hide it like a window-X close would
+	iup.Hide(dlg)
+
 	-- Execute all registered cleanup functions
 	states.execute_cleanup()
-
-	-- Teardown order matters: destroying widgets and closing IUP can still
-	-- fire callbacks (unmap, killfocus...), so the callbacks may only be freed
-	-- once no IUP object that could call them exists any more.
-	iup.Destroy(dlg)
-	iup.Close()
-	iup.FreeCallbacks()
 	collectgarbage("collect")
 
+	-- free callbacks
+	iup.FreeCallbacks()
+
+	iup.Destroy(dlg)
+	iup.Close()
 	return iup.CLOSE
 end
 
