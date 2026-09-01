@@ -355,9 +355,13 @@ function M.create()
 		for _, char in Party do
 			if skills_option == "1" or skills_option == "2" then
 				local available_skills = {}
-				for skill_id, reachable_mastery in EnumAvailableSkills(char.Class) do
-					available_skills[skill_id] = reachable_mastery
-				end
+				-- pcall: EnumAvailableSkills indexes class-skill tables and can
+				-- fail for mod class ids beyond the vanilla tables
+				pcall(function()
+					for skill_id, reachable_mastery in EnumAvailableSkills(char.Class) do
+						available_skills[skill_id] = reachable_mastery
+					end
+				end)
 				-- Process all skills
 				for i = 0, char.Skills.Count - 1 do
 					local reachable_mastery = available_skills[i]

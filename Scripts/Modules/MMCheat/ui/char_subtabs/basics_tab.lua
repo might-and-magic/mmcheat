@@ -134,7 +134,13 @@ function M.parent_apply()
 		char.ArmorClassBonus = iup.GetInt(ac_bonus, "VALUE") or 0
 		char.SkillPoints = iup.GetInt(skill_points, "VALUE") or 0
 		local old_class = char.Class
-		char.Class = iup.GetInt(class, "VALUE") - 1
+		-- Don't touch the class when nothing is selected in the dropdown
+		-- (e.g. a mod class id beyond the class list): VALUE is 0 then, and
+		-- writing -1 to char.Class would corrupt the character
+		local class_value = iup.GetInt(class, "VALUE")
+		if class_value and class_value >= 1 then
+			char.Class = class_value - 1
+		end
 	end
 	-- end
 end
@@ -143,20 +149,16 @@ end
 -- end
 
 function M.firstload()
-	-- Create class list from const.Class and Game.ClassNames
+	-- Create the class list from the runtime Game.ClassNames table (not from
+	-- const.Class), so classes added by mods that extend the table are
+	-- included. The dropdown index stays class id + 1.
 	local class_names = {}
-	local sorted_classes = {}
-	for key, value in pairs(const.Class) do
-		table.insert(sorted_classes, {
-			key = key,
-			value = value
-		})
-	end
-	table.sort(sorted_classes, function(a, b)
-		return a.value < b.value
+	local class_count = 0
+	pcall(function()
+		class_count = Game.ClassNames.count
 	end)
-	for _, item in ipairs(sorted_classes) do
-		table.insert(class_names, enc.decode(Game.ClassNames[item.value]))
+	for i = 0, class_count - 1 do
+		table.insert(class_names, utils.class_name(i))
 	end
 	utils.load_select_options(class, class_names)
 

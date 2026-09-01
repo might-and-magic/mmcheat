@@ -753,9 +753,21 @@ function M.SetLootedCorpseDisapProb(chance)
 	end
 end
 
+--- Class name by id, safe for mods whose class ids exceed the
+--- Game.ClassNames array bounds (falls back to the raw id)
+function M.class_name(class_id)
+	local ok, name = pcall(function()
+		return Game.ClassNames[class_id]
+	end)
+	if ok and name and name ~= "" then
+		return enc.decode(name)
+	end
+	return tostring(class_id)
+end
+
 function M.format_character_info(char)
 	return enc.decode(char.Name) .. i18n._("left_paren") .. i18n._("level"):lower() .. " " .. char.LevelBase .. " " ..
-		enc.decode(Game.ClassNames[char.Class]) .. i18n._("right_paren")
+		M.class_name(char.Class) .. i18n._("right_paren")
 end
 
 function M.format_item_info(item)
