@@ -76,7 +76,7 @@ Click on the map to select coordinates (X, Y).
 
 Click on the circle controls to select direction and angle.
 
-All images displayed in MMCheat are read directly from the game's memory, except for indoor maps, which are extracted from the `Scripts\Modules\MMCheat\data\indoor2dmap.bin` file.
+All images displayed in MMCheat are read directly from the game's memory or data files. Indoor map outlines are extracted at runtime from the game's map files in the LOD archives (including any mod's custom LOD archives), so indoor maps of any mod are supported automatically.
 
 #### Save Map Image and View Info
 
@@ -311,11 +311,10 @@ If you have multiple game processes (mm?.exe) running, you can stop all other pr
 
 ## Compatibility
 
-MMCheat should work on all versions of MM6/7/8 and MMMerge. It also supports MM Merge Redone. It hasn't been tested on other mods.
+MMCheat should work on all versions of MM6/7/8 and MMMerge. It should also support mods based on MM 6/7/8 GrayFace Patch + latest MMExtension, or on latest MM Merge. Maps (including indoor maps) of any mod are now supported automatically.
 
-If you want it to work on other mods, you need to add these files:
+If you want map-default teleport coordinates to work on other mods, you can optionally add this file:
 
-- Scripts\Modules\MMCheat\data\<MOD_NAME>\_indoor2dmap.bin
 - Scripts\Modules\MMCheat\data\<MOD_NAME>\_defaultcoords.lua
 
 ## Copyright

@@ -4,6 +4,9 @@ https://github.com/might-and-magic/mmcheat/blob/main/LICENSE.md
 Scripts/Modules/iup.lua file, modified by Tom Chen, is originally released by Playermet under the MIT License:  
 https://github.com/Playermet/luajit-iup
 
+Scripts/Modules/MMCheat/util/general/zzlib.lua (zzlib, pure-Lua zlib decompression) is by Francois Galea, released under the WTFPL license:  
+https://codeberg.org/zerkman/zzlib
+
 Might and Magic games' files are proprietary. They were previously owned by The 3DO Company and New World Computing, Inc. Ubisoft Entertainment SA holds their copyright since 2003. "Might and Magic" is a registered trademark of Ubisoft Entertainment SA.
 
 GrayFace's patches, MMExtension, and other tools are under mixed licenses:  

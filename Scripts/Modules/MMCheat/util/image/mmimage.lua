@@ -105,9 +105,8 @@ function M.export_all_maps(dir, command)
 				local max_nominal_size = arg2
 				local padding = arg3
 				local map_filename_without_ext = map_filename:match("^(.*)%.[^%.]+$") or map_filename
-				local normalized_map_filename = utils.normalize_map_filename(map_filename_without_ext)
 				local indoor2dmap = require("MMCheat/util/image/indoor2dmap")
-				local svg = indoor2dmap.get_map_svg(normalized_map_filename, stroke_width, max_nominal_size, padding,
+				local svg = indoor2dmap.get_map_svg(map_filename_without_ext, stroke_width, max_nominal_size, padding,
 					true)
 				local system = require("MMCheat/util/general/system")
 				system.save_text_file(dir .. map_filename_without_ext .. ".svg", svg)
@@ -118,9 +117,8 @@ function M.export_all_maps(dir, command)
 			if utils.mapconv.is_outdoor(map_filename) == false then
 				local map_image_size = arg1 or utils.map_image_size
 				local map_filename_without_ext = map_filename:match("^(.*)%.[^%.]+$") or map_filename
-				local normalized_map_filename = utils.normalize_map_filename(map_filename_without_ext)
 				local indoor2dmap = require("MMCheat/util/image/indoor2dmap")
-				local map_data = indoor2dmap.get_map(normalized_map_filename, true)
+				local map_data = indoor2dmap.get_map(map_filename_without_ext, true)
 				if map_data then
 					local coordcal = require("MMCheat/util/image/coordcal")
 					local x_min, y_min, size = coordcal.cal_square_bounds(map_data.min_x, map_data.min_y,
