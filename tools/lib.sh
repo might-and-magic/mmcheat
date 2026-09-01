@@ -74,6 +74,23 @@ make_zip() {
 	die "no working zip tool found (install zip or 7z, or run on Windows where PowerShell is used)"
 }
 
+# find_gh
+# Prints a usable GitHub CLI command, or nothing. On Windows it is often not on
+# the PATH of a shell that was started before it was installed.
+find_gh() {
+	if command -v gh >/dev/null 2>&1; then
+		echo gh
+		return 0
+	fi
+	for _p in "/c/Program Files/GitHub CLI/gh.exe" "/c/Program Files (x86)/GitHub CLI/gh.exe"; do
+		if [ -x "$_p" ]; then
+			echo "$_p"
+			return 0
+		fi
+	done
+	return 1
+}
+
 # mmcheat_version ABOUT_LUA_PATH
 # Prints the version string from Scripts/Modules/MMCheat/about.lua.
 mmcheat_version() {

@@ -65,7 +65,8 @@ jobs:
               --title "MMExtension snapshots" \
               --notes "Packaged snapshots of https://github.com/GrayFace/MMExtension for MMCheat users, built by tools/mmextension.sh."
           fi
-          gh release upload "$SNAPSHOT_TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$SNAPSHOT_TAG" dist/MMExtension-*.zip \
+            --repo "$GITHUB_REPOSITORY" --clobber
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -67,10 +67,11 @@ It assembles `build/` and writes `dist/MMCheat-<version>.zip`, whose layout is
 what users extract into their game folder. `--no-zip` stops after `build/`;
 `--version` prints the version from `about.lua`.
 
-`build.ps1` and `tools/mmextension.ps1` are wrappers around the shell scripts,
-not ports: what goes into a package would otherwise be written down twice and
-drift apart. They use the bash that comes with Git for Windows, which any
-clone of this repository implies.
+Every `.ps1` here (`build.ps1`, `tools/mmextension.ps1`, `tools/release.ps1`)
+is a wrapper around the shell script of the same name, not a port: what goes
+into a package, and in which order a release happens, would otherwise be
+written down twice and drift apart. They use the bash that comes with Git for
+Windows, which any clone of this repository implies.
 
 Zipping needs `zip`, `7z`, or PowerShell — the last is picked automatically on
 Windows through `tools/zip.ps1`, which writes standard forward-slash entry
@@ -78,18 +79,39 @@ names (`ZipFile::CreateFromDirectory` would use backslashes).
 
 ## Releasing
 
-1. Bump `version` and `version_date` in `Scripts/Modules/MMCheat/about.lua`,
-   and update the download links in `README.md`.
-2. Commit, then push a tag that matches the version:
+One command, from a clean `main`:
 
-   ```sh
-   git tag v1.2.3
-   git push origin v1.2.3
-   ```
+```sh
+tools/release.sh 1.2.3          # .\tools\release.ps1 1.2.3 on Windows
+tools/release.sh 1.2.3 --dry-run
+```
 
-3. `.github/workflows/release.yml` verifies that the tag matches `about.lua`,
-   downloads the bundled binaries, builds, and creates the GitHub release with
-   `MMCheat-<version>.zip` attached.
+It does the steps of a release in the order they depend on each other:
+
+1. **Check.** Refuses to run unless you are on `main`, the working tree is
+   clean and in sync with the remote, and `v1.2.3` does not exist yet.
+2. **MMExtension first.** If upstream moved on, the new snapshot is packaged,
+   uploaded to the `mmextension` release and recorded in
+   `tools/mmextension.env`. It has to happen first, because the next step
+   writes its file name into the README. `--skip-mmextension` leaves the
+   published snapshot as it is.
+3. **README.** Points both download links at the snapshot from step 2 and at
+   the MMCheat version about to be released, and verifies afterwards that both
+   links were really rewritten.
+4. **Version.** Writes `version` and today's `version_date` into
+   `Scripts/Modules/MMCheat/about.lua`.
+5. **Push.** Commits everything as `MMCheat 1.2.3`, tags `v1.2.3` and pushes.
+   `.github/workflows/release.yml` then verifies that the tag matches
+   `about.lua`, downloads the bundled binaries, builds and creates the GitHub
+   release with `MMCheat-1.2.3.zip` attached — the file the README now links
+   to.
+
+Because the README links carry versions, the order above is not a checklist to
+remember: the script enforces it, and `--dry-run` shows what it would do.
+
+The `binaries` and `mmextension` releases are file stores rather than versions
+of MMCheat, so they stay marked as pre-releases and never appear as the
+repository's latest release.
 
 ## Bundled binaries
 
