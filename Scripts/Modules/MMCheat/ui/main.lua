@@ -28,8 +28,18 @@ end
 local about_tab = require("MMCheat/ui/tabs/about_tab")
 -- local test_tab = require("MMCheat/ui/tabs/test_tab")
 
+-- IUP is initialized once per game process and stays open: repeated
+-- IupOpen/IupClose cycles are a known source of instability
+local iup_opened = false
+
 local function main()
-	iup.Open(nil, nil)
+	if not iup_opened then
+		if iup.Open(nil, nil) == iup.ERROR then
+			Game.ShowStatusText("MMCheat: IUP initialization failed")
+			return
+		end
+		iup_opened = true
+	end
 	iup.SetGlobal("UTF8MODE", "YES")
 
 	states.cleanup()
@@ -75,13 +85,14 @@ local function main()
 
 	-- Execute all registered cleanup functions
 	states.execute_cleanup()
+
+	-- Destroy the dialog FIRST: destroying widgets can still fire callbacks
+	-- (unmap, killfocus...), so the callbacks must be freed only afterwards
+	iup.Destroy(dlg)
+	iup.FreeCallbacks()
 	collectgarbage("collect")
 
-	-- free callbacks
-	iup.FreeCallbacks()
-
-	iup.Destroy(dlg)
-	iup.Close()
+	-- note: IUP deliberately stays open (no iup.Close()), see above
 	return iup.CLOSE
 end
 

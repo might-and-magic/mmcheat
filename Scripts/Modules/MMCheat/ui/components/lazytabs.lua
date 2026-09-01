@@ -2,6 +2,22 @@ local iup = require("iup")
 local ui = require("MMCheat/ui/components/ui_components")
 local states = require("MMCheat/util/states")
 
+-- All children lists of the current UI session; a single cleanup handler is
+-- registered once at module load (registering a new closure on every
+-- lazytabs() call would make the cleanup handler list grow forever)
+local active_children = {}
+
+states.register_cleanup(function()
+	for _, children in ipairs(active_children) do
+		for _, module in ipairs(children) do
+			if module.cleanup then
+				module.cleanup()
+			end
+		end
+	end
+	active_children = {}
+end)
+
 local function lazytabs(children, attrs, first_tab_is_not_loaded_when_created)
 	local tab_contents = {}
 	local tab_info = {}
@@ -50,14 +66,7 @@ local function lazytabs(children, attrs, first_tab_is_not_loaded_when_created)
 		return iup.DEFAULT
 	end)
 
-	local function cleanup()
-		for _, module in ipairs(children) do
-			if module.cleanup then
-				module.cleanup()
-			end
-		end
-	end
-	states.register_cleanup(cleanup)
+	table.insert(active_children, children)
 
 	return tabs, tab_info
 end

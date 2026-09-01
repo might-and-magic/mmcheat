@@ -485,6 +485,64 @@ local mod = {}
 
 mod.stored_callbacks = {}
 
+-- Callback error protection --------------------------------------------------
+-- A Lua error escaping an FFI callback crosses the C stack boundary, which is
+-- undefined behavior in LuaJIT and crashes the game. Every callback is
+-- therefore wrapped in xpcall: on error, the error with traceback is appended
+-- to a log file, shown in a message dialog (at most a few times per session),
+-- and IUP_DEFAULT is returned so the UI keeps working.
+mod.error_log_path = 'MMCheatError.log'
+local error_dialogs_shown = 0
+
+local function cb_error_handler(err)
+  return debug.traceback(tostring(err), 2)
+end
+
+local function report_cb_error(msg)
+  pcall(function()
+    local f = io.open(mod.error_log_path, 'a')
+    if f then
+      f:write(os.date('%Y-%m-%d %H:%M:%S'), '\n', msg, '\n\n')
+      f:close()
+    end
+  end)
+  if error_dialogs_shown < 3 then
+    error_dialogs_shown = error_dialogs_shown + 1
+    pcall(function()
+      bind.IupMessage('MMCheat error',
+        msg .. '\n\n(also written to ' .. mod.error_log_path .. ')')
+    end)
+  end
+end
+
+-- Wraps a Lua callback so errors can't cross the FFI callback boundary.
+-- Also coerces the return value to an int (the C callback signature requires
+-- one; returning nil from a callback would crash LuaJIT too).
+local function protect(func)
+  return function(...)
+    local ok, res = xpcall(func, cb_error_handler, ...)
+    if not ok then
+      report_cb_error(res)
+      return const.DEFAULT
+    end
+    return type(res) == 'number' and res or const.DEFAULT
+  end
+end
+
+-- Handles are cdata pointers: every cdata is a distinct Lua object, so a
+-- handle can't be used as a table key directly - use its pointer value.
+local function handle_key(ih)
+  return tonumber(ffi.cast('uintptr_t', ih))
+end
+
+-- NULL-safe ffi.string (many Iup* functions return NULL)
+local function S(p)
+  if p ~= nil then
+    return ffi.string(p)
+  end
+  return nil
+end
+
 -- cap as in c
 
 function mod.Open()
@@ -595,7 +653,7 @@ function mod.StoreLanguageString(name, str)
 end
 
 function mod.GetLanguageString(name)
-  return ffi.string(bind.IupGetLanguageString(name))
+  return S(bind.IupGetLanguageString(name))
 end
 
 function mod.SetLanguagePack(ih)
@@ -709,7 +767,7 @@ function mod.SetAttributes(ih, str)
 end
 
 function mod.GetAttributes(ih)
-  return ffi.string(bind.IupGetAttributes(ih))
+  return S(bind.IupGetAttributes(ih))
 end
 
 function mod.SetAttribute(ih, name, value_or_format, ...)
@@ -752,7 +810,7 @@ end
 
 function mod.GetAttribute(ih, name)
   name = help.attrname(name)
-  return ffi.string(bind.IupGetAttribute(ih, name))
+  return S(bind.IupGetAttribute(ih, name))
 end
 
 function mod.GetInt(ih, name)
@@ -838,7 +896,7 @@ end
 
 function mod.GetAttributeId(ih, name, id)
   name = help.attrname(name)
-  return ffi.string(bind.IupGetAttributeId(ih, name, id))
+  return S(bind.IupGetAttributeId(ih, name, id))
 end
 
 function mod.GetIntId(ih, name, id)
@@ -906,7 +964,7 @@ end
 
 function mod.GetAttributeId2(ih, name, lin, col)
   name = help.attrname(name)
-  return ffi.string(bind.IupGetAttributeId2(ih, name, lin, col))
+  return S(bind.IupGetAttributeId2(ih, name, lin, col))
 end
 
 function mod.GetIntId2(ih, name, lin, col)
@@ -948,7 +1006,7 @@ end
 
 function mod.GetGlobal(name)
   name = help.attrname(name)
-  return ffi.string(bind.IupGetGlobal(name))
+  return S(bind.IupGetGlobal(name))
 end
 
 function mod.SetFocus(ih)
@@ -975,49 +1033,53 @@ end
 function mod.SetCallback(ih, name, func)
   name = help.attrname(name)
 
-  -- Initialize storage for this handle if needed
-  mod.stored_callbacks[ih] = mod.stored_callbacks[ih] or {}
-
-  -- Free previous callback for this handle and name if exists
-  if mod.stored_callbacks[ih][name] then
-    mod.stored_callbacks[ih][name]:free()
-    mod.stored_callbacks[ih][name] = nil
+  local cb_cdata
+  if type(func) == 'function' then
+    -- plain Lua function: wrap for error protection, then create the callback
+    cb_cdata = ffi.cast('Icallback', protect(func))
+  else
+    -- already an ffi callback cdata (created via iup.cb.*, already protected)
+    cb_cdata = func
   end
 
-  -- Cast the Lua function to ffi callback
-  local cb = ffi.cast('Icallback', func)
+  local key = handle_key(ih)
+  mod.stored_callbacks[key] = mod.stored_callbacks[key] or {}
 
-  -- Store the casted callback to free later
-  mod.stored_callbacks[ih][name] = cb
+  -- Free previous callback for this handle and name if it exists
+  -- (it is being replaced in IUP right below, so it can never fire again)
+  local prev = mod.stored_callbacks[key][name]
+  if prev ~= nil then
+    pcall(function() prev:free() end)
+  end
 
-  -- Set the callback on the IUP handle
-  return bind.IupSetCallback(ih, name, cb)
+  -- Keep the callback cdata anchored so it isn't garbage collected
+  mod.stored_callbacks[key][name] = cb_cdata
+
+  return bind.IupSetCallback(ih, name, ffi.cast('Icallback', cb_cdata))
 end
 
 function mod.FreeCallbacks(ih)
-  if ih then
-    -- Free callbacks for a specific handle
-    if mod.stored_callbacks[ih] then
-      for _, cb in pairs(mod.stored_callbacks[ih]) do
-        if type(cb) == "cdata" and ffi.istype("Icallback", cb) and cb.free then
-          cb:free()
-        end
-      end
-      mod.stored_callbacks[ih] = nil
-    end
-  elseif type(ih) == 'table' then
+  if type(ih) == 'table' then
     for _, handle in pairs(ih) do
       mod.FreeCallbacks(handle)
     end
-  elseif ih == nil then
-    -- Free all callbacks for all handles
-    for handle, callbacks in pairs(mod.stored_callbacks) do
-      for _, cb in pairs(callbacks) do
-        if type(cb) == "cdata" and ffi.istype("Icallback", cb) and cb.free then
-          cb:free()
-        end
+  elseif ih ~= nil then
+    -- Free callbacks of a specific handle
+    local key = handle_key(ih)
+    local callbacks = mod.stored_callbacks[key]
+    if callbacks then
+      for _, cb_cdata in pairs(callbacks) do
+        pcall(function() cb_cdata:free() end)
       end
-      mod.stored_callbacks[handle] = nil
+      mod.stored_callbacks[key] = nil
+    end
+  else
+    -- Free all callbacks of all handles
+    for key, callbacks in pairs(mod.stored_callbacks) do
+      for _, cb_cdata in pairs(callbacks) do
+        pcall(function() cb_cdata:free() end)
+      end
+      mod.stored_callbacks[key] = nil
     end
   end
 end
@@ -1039,7 +1101,11 @@ function mod.SetFunction(name, func)
 end
 
 function mod.GetHandle(name)
-  return bind.IupGetHandle(name)
+  local ih = bind.IupGetHandle(name)
+  if ih ~= nil then
+    return ih
+  end
+  return nil
 end
 
 function mod.SetHandle(name, ih)
@@ -1054,7 +1120,9 @@ function mod.GetAllNames()
 
   local names = {}
   for i = 0, count - 1 do
-    table.insert(names, ffi.string(cdata[i]))
+    if cdata[i] ~= nil then
+      table.insert(names, ffi.string(cdata[i]))
+    end
   end
 
   return names
@@ -1068,7 +1136,9 @@ function mod.GetAllDialogs()
 
   local dialogs = {}
   for i = 0, count - 1 do
-    table.insert(dialogs, ffi.string(cdata[i]))
+    if cdata[i] ~= nil then
+      table.insert(dialogs, ffi.string(cdata[i]))
+    end
   end
 
   return dialogs
@@ -1090,11 +1160,11 @@ function mod.GetAttributeHandle(ih, name)
 end
 
 function mod.GetClassName(ih)
-  return ffi.string(bind.IupGetClassName(ih))
+  return S(bind.IupGetClassName(ih))
 end
 
 function mod.GetClassType(ih)
-  return ffi.string(bind.IupGetClassType(ih))
+  return S(bind.IupGetClassType(ih))
 end
 
 function mod.GetAllClasses()
@@ -1105,7 +1175,9 @@ function mod.GetAllClasses()
 
   local classes = {}
   for i = 0, count - 1 do
-    table.insert(classes, ffi.string(cdata[i]))
+    if cdata[i] ~= nil then
+      table.insert(classes, ffi.string(cdata[i]))
+    end
   end
 
   return classes
@@ -1670,146 +1742,108 @@ end
 
 local cb = {}
 
+-- All typed callback constructors wrap the Lua function with `protect` so
+-- errors can't cross the FFI callback boundary (see top of file). Signatures
+-- with char* arguments convert them to Lua strings inside the protected call.
+
 function cb.action(func)
-  return cb.action_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.action_raw(protect(func))
 end
 
 function cb.getfocus_cb(func)
-  return cb.getfocus_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.getfocus_cb_raw(protect(func))
 end
 
 function cb.killfocus_cb(func)
-  return cb.killfocus_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.killfocus_cb_raw(protect(func))
 end
 
 function cb.k_any(func)
-  return cb.k_any_raw(function(ih, c)
-    return func(ih, c) or const.default
-  end)
+  return cb.k_any_raw(protect(func))
 end
 
 function cb.keypress_cb(func)
-  return cb.keypress_cb_raw(function(ih, c, press)
-    return func(ih, c, press) or const.default
-  end)
+  return cb.keypress_cb_raw(protect(func))
 end
 
 function cb.help_cb(func)
-  return cb.help_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.help_cb_raw(protect(func))
 end
 
 function cb.scroll_cb(func)
-  return cb.scroll_cb_raw(function(ih, op, posx, posy)
-    return func(ih, op, posx, posy) or const.default
-  end)
+  return cb.scroll_cb_raw(protect(func))
 end
 
 function cb.resize_cb(func)
-  return cb.resize_cb_raw(function(ih, width, height)
-    return func(ih, width, height) or const.default
-  end)
+  return cb.resize_cb_raw(protect(func))
 end
 
 function cb.motion_cb(func)
-  return cb.motion_cb_raw(function(ih, x, y, status)
-    status = ffi.string(status)
-    return func(ih, x, y, status) or const.default
-  end)
+  return cb.motion_cb_raw(protect(function(ih, x, y, status)
+    return func(ih, x, y, ffi.string(status))
+  end))
 end
 
 function cb.button_cb(func)
-  return cb.button_cb_raw(function(ih, button, pressed, x, y, status)
-    status = ffi.string(status)
-    return func(ih, button, pressed, x, y, status) or const.default
-  end)
+  return cb.button_cb_raw(protect(function(ih, button, pressed, x, y, status)
+    return func(ih, button, pressed, x, y, ffi.string(status))
+  end))
 end
 
 function cb.enterwindow_cb(func)
-  return cb.enterwindow_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.enterwindow_cb_raw(protect(func))
 end
 
 function cb.leavewindow_cb(func)
-  return cb.leavewindow_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.leavewindow_cb_raw(protect(func))
 end
 
 function cb.wheel_cb(func)
-  return cb.wheel_cb_raw(function(ih, delta, x, y, status)
-    status = ffi.string(status)
-    return func(ih, delta, x, y, status) or const.default
-  end)
+  return cb.wheel_cb_raw(protect(function(ih, delta, x, y, status)
+    return func(ih, delta, x, y, ffi.string(status))
+  end))
 end
 
 function cb.open_cb(func)
-  return cb.open_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.open_cb_raw(protect(func))
 end
 
 function cb.highlight_cb(func)
-  return cb.highlight_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.highlight_cb_raw(protect(func))
 end
 
 function cb.menuclose_cb(func)
-  return cb.menuclose_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.menuclose_cb_raw(protect(func))
 end
 
 function cb.map_cb(func)
-  return cb.map_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.map_cb_raw(protect(func))
 end
 
 function cb.unmap_cb(func)
-  return cb.unmap_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.unmap_cb_raw(protect(func))
 end
 
 function cb.close_cb(func)
-  return cb.close_cb_raw(function(ih)
-    return func(ih) or const.default
-  end)
+  return cb.close_cb_raw(protect(func))
 end
 
 function cb.show_cb(func)
-  return cb.show_cb_raw(function(ih, state)
-    return func(ih, state) or const.default
-  end)
+  return cb.show_cb_raw(protect(func))
 end
 
 function cb.dropfiles_cb(func)
-  return cb.dropfiles_cb_raw(function(ih, filename, num, x, y)
-    filename = ffi.string(filename)
-    return func(ih, filename, num, x, y) or const.default
-  end)
+  return cb.dropfiles_cb_raw(protect(function(ih, filename, num, x, y)
+    return func(ih, ffi.string(filename), num, x, y)
+  end))
 end
 
 function cb.wom_cb(func)
-  return cb.wom_cb_raw(function(ih, state)
-    return func(ih, state) or const.default
-  end)
+  return cb.wom_cb_raw(protect(func))
 end
 
 function cb.caret_cb(func)
-  return cb.caret_cb_raw(function(ih, lin, col, pos)
-    return func(ih, lin, col, pos) or const.default
-  end)
+  return cb.caret_cb_raw(protect(func))
 end
 
 cb.action_raw = 'int (*)(Ihandle*)'

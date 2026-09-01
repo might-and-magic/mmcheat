@@ -10,6 +10,10 @@ local utils = require("MMCheat/util/utils")
 local ImageLabel = {}
 ImageLabel.__index = ImageLabel
 
+-- unique handle names via a plain counter (the pointer-derived name used
+-- before broke when widget creation failed and tostring() had no address)
+local handle_name_counter = 0
+
 --[[
     ImageLabel:new
 
@@ -63,6 +67,9 @@ function ImageLabel:new(params)
 
 	-- Create label
 	self.label = iup.label()
+	if self.label == nil then
+		error("MMCheat: failed to create an IUP control - IUP is not initialized correctly")
+	end
 	iup.SetAttribute(self.label, "ALIGNMENT", "ACENTER")
 
 	if attrs then
@@ -72,8 +79,8 @@ function ImageLabel:new(params)
 	end
 
 	if use_handle then
-		local unique_handle_name = "img_lbl_" .. tostring(self.label):match(": (0x%x+)")
-		self.handle_name = unique_handle_name
+		handle_name_counter = handle_name_counter + 1
+		self.handle_name = "img_lbl_" .. handle_name_counter
 	end
 
 	-- Load initial image
