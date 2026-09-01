@@ -28,17 +28,17 @@ end
 local about_tab = require("MMCheat/ui/tabs/about_tab")
 -- local test_tab = require("MMCheat/ui/tabs/test_tab")
 
--- IUP is initialized once per game process and stays open: repeated
--- IupOpen/IupClose cycles are a known source of instability
-local iup_opened = false
-
 local function main()
-	if not iup_opened then
-		if iup.Open(nil, nil) == iup.ERROR then
-			Game.ShowStatusText("MMCheat: IUP initialization failed")
-			return
-		end
-		iup_opened = true
+	-- IupOpen/IupClose must bracket every MMCheat session: IupOpen enters a
+	-- COM apartment (CoInitializeEx) and IupClose leaves it again. Leaving IUP
+	-- open after the dialog closes leaves the game's main thread in an
+	-- apartment it never asked for, which breaks the game (the game's own
+	-- DirectDraw/Direct3D is COM based).
+	-- IupOpen returns IUP_OPENED when IUP is already open, only IUP_ERROR is a
+	-- failure.
+	if iup.Open(nil, nil) == iup.ERROR then
+		Game.ShowStatusText("MMCheat: IUP initialization failed")
+		return
 	end
 	iup.SetGlobal("UTF8MODE", "YES")
 
@@ -100,13 +100,14 @@ local function main()
 	-- Execute all registered cleanup functions
 	states.execute_cleanup()
 
-	-- Destroy the dialog FIRST: destroying widgets can still fire callbacks
-	-- (unmap, killfocus...), so the callbacks must be freed only afterwards
+	-- Teardown order matters: destroying widgets and closing IUP can still
+	-- fire callbacks (unmap, killfocus...), so the callbacks may only be freed
+	-- once no IUP object that could call them exists any more.
 	iup.Destroy(dlg)
+	iup.Close()
 	iup.FreeCallbacks()
 	collectgarbage("collect")
 
-	-- note: IUP deliberately stays open (no iup.Close()), see above
 	return iup.CLOSE
 end
 
