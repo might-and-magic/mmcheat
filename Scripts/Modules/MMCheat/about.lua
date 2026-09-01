@@ -1,7 +1,7 @@
 return {
 	short_name = "MMCheat",
-	version = "1.0.1",
-	version_date = "2025-06-23",
+	version = "1.1.0",
+	version_date = "2026-09-01",
 	home_url = "https://github.com/might-and-magic/mmcheat",
 	author = "Tom Chen",
 	author_url = "https://tomchen.org/",
