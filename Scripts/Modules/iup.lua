@@ -556,7 +556,10 @@ function mod.Close()
 end
 
 function mod.ImageLibOpen()
-  bind.IupImageLibOpen()
+  -- IupImageLibOpen moved out of iup.dll into iupimglib.dll in newer IUP
+  -- versions, and that library is not bundled - fail with a clear message
+  -- instead of an obscure symbol resolution error
+  error("IupImageLibOpen is not available: iupimglib.dll is not bundled")
 end
 
 function mod.MainLoop()
