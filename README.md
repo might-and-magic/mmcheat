@@ -30,12 +30,12 @@ _MMCheat's UI library (IUP 3.32, the bundled ExeMods\iup.dll) requires the Micro
 
 ### Linux (Wine)
 
-MMCheat runs under Wine, but it opens a native window on top of a game that would rather own the whole screen, and that is where most of the reported freezes come from. Two settings make it far more reliable, both found by players running it this way:
+MMCheat opens a window on top of a game that would rather own the screen, which is where most freezes under Wine come from. Two settings avoid nearly all of them:
 
-- Set a **virtual desktop** in Wine, with its resolution set to your native one
-- Play **windowed** — press <kbd>F4</kbd> in the game. Moving the game window once afterwards, which rescales it, helps as well
+- Set a **virtual desktop** in Wine, at your native resolution
+- Play **windowed** (<kbd>F4</kbd> in the game); moving the window once afterwards helps too
 
-If MMCheat still fails, `MMCheatError.log` in the game folder holds a traceback; please attach it to an [issue](https://github.com/might-and-magic/mmcheat/issues).
+If it still fails, `MMCheatError.log` in the game folder has a traceback — please attach it to an [issue](https://github.com/might-and-magic/mmcheat/issues).
 
 ## Important General Notes
 
@@ -268,9 +268,11 @@ Game score is calculated based on the total experience of all characters in the 
 
 Time exiting the Hive + 10min is used by MM6 (not sure about 7 and 8); this extra time is not calculated here.
 
-The game records absolute times: when regeneration last ran, when a shop restocks, when the map was last refilled. Its checks are "now minus the recorded time", so a time that ends up in the future never comes due again — after setting the clock back, HP/SP regeneration, poison and disease damage stop ticking until the old date is reached again. "Apply" repairs this: recorded times that lie in the future are pulled back to the new time, and when you move the clock backwards, pending ones (shop and guild restocking, bounty hunts, shop bans) are moved back by the same amount so they stay the same distance away. Moving the clock forward is untouched, so it still restocks shops and respawns monsters.
+The game records when regeneration last ran and when shops last restocked, then checks "now minus that". Setting the clock back leaves those records in the future, where they never come due: HP/SP regeneration, poison and disease damage stop ticking until the old date returns.
 
-If a save is already stuck because an earlier MMCheat version set the date back, open this tab and click "Apply" once (the current date is fine) to get the timers running again.
+"Apply" repairs that. Records lying in the future are pulled back to the new date, and pending ones (shop and guild restocking, bounty hunts, shop bans) move back with the clock, keeping the same wait. Moving the clock forward is left alone, so it still restocks shops and respawns monsters.
+
+A save already stuck by an earlier version: open this tab and click "Apply" once, any date will do.
 
 The "Snow" checkbox is unchecked by default even if the weather is snow in the game, but it doesn't matter. You can check or leave it unchecked and click "Apply", and it will make it snow or stop snowing.
 
@@ -336,8 +338,7 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 
 ### <a id="v2.0.0"></a>[2.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.0) (2026-09-01)
 
-- **Setting the date back no longer stops the game's timers.** HP/SP regeneration and poison and disease damage went silent until the old date came round again, because the game records when they last ran and compares "now minus that". "Apply" now brings those records back with the clock, and repairs a save an earlier version left stuck.
-- Shop and guild restocking, bounty hunts and shop bans keep the same distance away when the clock is moved backwards. Moving it forward is unchanged, so it still restocks shops and respawns monsters.
+- **Setting the date back no longer stops the game's timers.** HP/SP regeneration and damage over time stopped until the old date came round again; "Apply" now moves the game's records back with the clock, and repairs a stuck save.
 
 ### <a id="v1.1.0"></a>[1.1.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.1.0) (2026-09-01)
 
