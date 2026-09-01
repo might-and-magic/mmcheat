@@ -95,16 +95,22 @@ It does the steps of a release in the order they depend on each other:
    `tools/mmextension.env`. It has to happen first, because the next step
    writes its file name into the README. `--skip-mmextension` leaves the
    published snapshot as it is.
-3. **README.** Points both download links at the snapshot from step 2 and at
+3. **Changelog.** Refuses to go on unless README.md's *Changelog* section has
+   an entry for the new version, that is a heading carrying the anchor
+   `<a id="v1.2.3"></a>`. Write it before releasing: the GitHub release notes
+   link to that anchor.
+4. **README.** Points both download links at the snapshot from step 2 and at
    the MMCheat version about to be released, and verifies afterwards that both
    links were really rewritten.
-4. **Version.** Writes `version` and today's `version_date` into
+5. **Version.** Writes `version` and today's `version_date` into
    `Scripts/Modules/MMCheat/about.lua`.
-5. **Push.** Commits everything as `MMCheat 1.2.3`, tags `v1.2.3` and pushes.
+6. **Push.** Commits everything as `MMCheat 1.2.3`, tags `v1.2.3` and pushes.
    `.github/workflows/release.yml` then verifies that the tag matches
    `about.lua`, downloads the bundled binaries, builds and creates the GitHub
    release with `MMCheat-1.2.3.zip` attached — the file the README now links
-   to.
+   to. The release notes it writes start with a link to
+   `README.md#v1.2.3`, the changelog entry from step 3, followed by GitHub's
+   generated notes.
 
 Because the README links carry versions, the order above is not a checklist to
 remember: the script enforces it, and `--dry-run` shows what it would do.

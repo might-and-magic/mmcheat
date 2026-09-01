@@ -125,7 +125,18 @@ missing, so the new snapshot cannot be published. Install it, or re-run with
 	fi
 fi
 
-# ---------------------------------------------------------------- 3. README
+# ------------------------------------------------------------- 3. changelog
+# the release notes link to README.md#v<version>, so the section has to exist
+info "== checking the changelog entry for $version"
+grep -q "<a id=\"v$version\"></a>" "$README" ||
+	die "$README has no changelog entry for $version. Add one under
+\"## Changelog\", starting with:
+
+  ### <a id=\"v$version\"></a>[$version]($REPO_URL/releases/tag/v$version) ($(TZ=UTC0 date +%Y-%m-%d))
+
+The GitHub release notes link to that anchor."
+
+# ---------------------------------------------------------------- 4. README
 # shellcheck disable=SC1090
 . "./$ENV_FILE"
 mmext_zip="MMExtension-$MMEXT_VERSION-$MMEXT_DATE.zip"
@@ -145,7 +156,7 @@ if [ "$dry_run" = 0 ]; then
 		die "the MMCheat link in $README was not updated"
 fi
 
-# -------------------------------------------------------------- 4. version
+# -------------------------------------------------------------- 5. version
 info "== writing version $version into $ABOUT"
 edit_file "$ABOUT" \
 	-e "s/^\([[:space:]]*version[[:space:]]*=[[:space:]]*\)\"[^\"]*\"/\1\"$version\"/" \
@@ -155,7 +166,7 @@ if [ "$dry_run" = 0 ]; then
 	[ "$(mmcheat_version "$ABOUT")" = "$version" ] || die "failed to write the version"
 fi
 
-# --------------------------------------------------------- 5. commit & push
+# --------------------------------------------------------- 6. commit & push
 info "== committing, tagging and pushing"
 run git add "$ABOUT" "$README"
 run git commit -m "MMCheat $version"

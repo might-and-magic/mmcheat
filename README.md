@@ -319,6 +319,27 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 
 - Scripts\Modules\MMCheat\data\<MOD_NAME>\_defaultcoords.lua
 
+## Changelog
+
+### <a id="v1.1.0"></a>[1.1.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.1.0) (2026-09-01)
+
+- **Stability work on the UI layer**: Lua errors in callbacks are caught and reported (dialog + MMCheatError.log) instead of crossing into the C library, IUP is opened once per process and paired with `IupClose` again, and the dialog is destroyed before its callbacks are freed.
+- **"Apply and close" buttons no longer make the game exit silently** (IUP's leftover `WM_QUIT` reached the game's message loop).
+- **Indoor maps of any mod**: outlines are extracted at runtime from the BLV files in the LOD archives, custom ones included.
+- **Mods with extra character classes**: the class dropdown comes from the running game, not the vanilla list.
+- **Bundled IUP upgraded to 3.32**; the dialog no longer opens far too tall on the first run.
+- **No runtime install needed**: vcruntime140.dll (x86) ships with MMCheat.
+- **Build and release tooling**: build.sh / build.ps1, MMExtension snapshot packaging and CI — see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### <a id="v1.0.1"></a>[1.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.1) (2025-06-23)
+
+- The window title now starts with "MMCheat".
+- "Apply All Changes Below" got a tooltip naming the sub-tabs it does not cover.
+
+### <a id="v1.0.0"></a>[1.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.0) (2025-06-22)
+
+- First release: all tabs, for MM6/7/8 and MMMerge, UI in 14 languages.
+
 ## Development
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for how to set up a development install, build the release package, and how the bundled IUP binaries and the packaged MMExtension snapshots are produced.

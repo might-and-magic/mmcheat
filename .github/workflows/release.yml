@@ -57,9 +57,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ inputs.tag || github.ref_name }}"
+          version="${{ steps.version.outputs.version }}"
+          # v<version> is the anchor README.md puts on this version's
+          # changelog heading; blob/HEAD follows the default branch, so the
+          # link keeps working after the tag was cut
+          notes="**What changed:** [MMCheat $version changelog]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/HEAD/README.md#v$version)"
           gh release create "$tag" dist/MMCheat-*.zip \
             --repo "$GITHUB_REPOSITORY" \
-            --title "MMCheat ${{ steps.version.outputs.version }}" \
+            --title "MMCheat $version" \
+            --notes "$notes" \
             --generate-notes
 
       - uses: actions/upload-artifact@v4
