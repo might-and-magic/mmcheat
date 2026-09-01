@@ -18,6 +18,7 @@ mkdir "build\Scripts\Modules\MMCheat" 2>nul
 
 REM Copy required files maintaining structure
 copy "ExeMods\iup.dll" "build\ExeMods\"
+copy "vcruntime140.dll" "build\"
 copy "Scripts\General\MMCheat.lua" "build\Scripts\General\"
 xcopy "Scripts\Modules\MMCheat\*.*" "build\Scripts\Modules\MMCheat\" /E /I /Y
 if exist "build\Scripts\Modules\MMCheat\conf.ini" del "build\Scripts\Modules\MMCheat\conf.ini"
