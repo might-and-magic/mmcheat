@@ -39,7 +39,19 @@ DIST_DIR="dist"
 command -v git >/dev/null 2>&1 || die "git is required"
 
 usage() {
-	sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
+	cat <<'EOF'
+Check for and package MMExtension snapshots for MMCheat users.
+
+  mmextension.sh check                is upstream newer than what we ship?
+  mmextension.sh fetch                package upstream HEAD
+  mmextension.sh fetch --commit SHA   package a specific commit
+  mmextension.sh fetch --update-env   also record the new snapshot
+
+Only "fetch" writes anything: it puts the zip in dist/. "check" just prints
+how the recorded snapshot compares with upstream.
+
+On Windows run tools\mmextension.ps1 with the same arguments.
+EOF
 	exit "${1:-0}"
 }
 

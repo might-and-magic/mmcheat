@@ -35,7 +35,20 @@ while [ $# -gt 0 ]; do
 		exit 0
 		;;
 	-h | --help)
-		sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+		cat <<'EOF'
+Build the MMCheat release package.
+
+  build.sh                    build/ and dist/MMCheat-<version>.zip
+  build.sh --no-zip           only the build/ folder
+  build.sh --version          print the version from about.lua
+  build.sh --fetch-binaries   (re-)download the bundled binaries
+
+The two bundled binaries (ExeMods/iup.dll and vcruntime140.dll) are not kept
+in this repository; they are downloaded from the "binaries" release when they
+are missing. See DEVELOPMENT.md.
+
+On Windows run build.ps1 with the same arguments.
+EOF
 		exit 0
 		;;
 	*) die "unknown option: $1 (try --help)" ;;

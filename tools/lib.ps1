@@ -37,10 +37,18 @@ function Invoke-ShellScript {
 	$bash = Find-Bash
 	Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
 
-	# The scripts write progress to stderr, which Windows PowerShell turns into
-	# a terminating error while ErrorActionPreference is Stop; the exit code is
-	# what actually says whether they worked.
+	# The scripts write progress to stderr, which Windows PowerShell decorates
+	# as a NativeCommandError - noise that looks like a failure. Unwrap those
+	# records back into plain stderr lines and leave stdout untouched, so that
+	# the output can still be captured. The exit code says whether it worked.
 	$ErrorActionPreference = 'Continue'
-	& $bash $Script @ScriptArgs
+	& $bash $Script @ScriptArgs 2>&1 | ForEach-Object {
+		if ($_ -is [System.Management.Automation.ErrorRecord]) {
+			[Console]::Error.WriteLine($_.Exception.Message)
+		}
+		else {
+			$_
+		}
+	}
 	exit $LASTEXITCODE
 }
