@@ -52,6 +52,64 @@ local function update_inputs_from_timestamp(timestamp_val, date, month_select, y
 	update_score(timestamp_val, score)
 end
 
+-- The game stores absolute game times: when regeneration last ran, when a
+-- shop restocks, when a map was last visited. Its checks are of the form
+-- "now minus the stored time", signed, so a stamp that sits in the future
+-- never triggers again: setting the clock back stops HP/SP regeneration and
+-- damage over time for as long as the party was rewound. Setting it forward
+-- is fine and must not be touched - that is how shops restock and monsters
+-- respawn.
+
+local function shift_stored_times_array(obj, name, delta)
+	pcall(function()
+		local a = obj[name]
+		for i = a.low, a.high do
+			local v = a[i]
+			if type(v) == "number" and v > 0 then
+				a[i] = math.max(v - delta, 0)
+			end
+		end
+	end)
+end
+
+-- Clamps a "this last happened at" stamp, which can never legitimately lie
+-- in the future. Doing it on every apply also repairs a save that an older
+-- MMCheat left with stalled timers.
+local function clamp_stored_time(obj, name, now)
+	pcall(function()
+		local v = obj[name]
+		if type(v) == "number" and v > now then
+			obj[name] = now
+		end
+	end)
+end
+
+local function fix_timers(old_time, new_time)
+	if new_time < old_time then
+		-- keep every "this happens next" stamp the same distance away
+		local delta = old_time - new_time
+		shift_stored_times_array(Party, "ShopNextRefill", delta)
+		shift_stored_times_array(Party, "GuildNextRefill", delta)
+		shift_stored_times_array(Party, "NextBountyHunt", delta)
+		if Game.Version ~= 6 then
+			shift_stored_times_array(Party, "ShopTheftExpireTime", delta)
+		end
+	end
+
+	-- regeneration, poison and disease damage, drowning: all of it hangs off
+	-- this one stamp
+	clamp_stored_time(Party, "LastRegenerationTime", new_time)
+	-- and the map the party is standing on: its visit stamp and the day its
+	-- monsters were last refilled ("the day of refill plus 1")
+	clamp_stored_time(Map, "LastVisitTime", new_time)
+	pcall(function()
+		local day = math.floor(new_time / const.Day) + 1
+		if Map.LastRefillDay > day then
+			Map.LastRefillDay = day
+		end
+	end)
+end
+
 function M.reload()
 	update_score(iup.GetInt(timestamp, "VALUE") or 0, score)
 end
@@ -152,7 +210,9 @@ function M.firstload()
 
 	iup.SetCallback(apply_button, "ACTION", function()
 		local timestamp_val = iup.GetInt(timestamp, "VALUE") or 0
+		local old_time = Game.Time
 		Game.Time = timestamp_val
+		fix_timers(old_time, timestamp_val)
 		return iup.DEFAULT
 	end)
 

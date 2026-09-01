@@ -179,6 +179,16 @@ release and records it in `tools/mmextension.env`.
 - `tools/test_blv_ingame.lua` — copy into `Scripts/Global/`, load a save and
   press <kbd>Ctrl</kbd>+<kbd>F9</kbd> to parse the outlines of every indoor map
   and write `mmcheat_blv_test.log`. Delete it from `Scripts/Global/` afterwards.
+- <kbd>Ctrl</kbd>+<kbd>F1</kbd> is MMExtension's Lua console (it pauses the
+  game): `Game.Time, Party.LastRegenerationTime` reads game state directly, so
+  most "did this field really change" questions need no script at all. That
+  pair is also how the Time tab's timer repair is checked — fake the broken
+  state with `Party.LastRegenerationTime = Game.Time + 100*const.Minute`, then
+  "Apply" and read it again: it must no longer be ahead of `Game.Time`.
+- A test script that moves the clock has to keep `Game.Time` positive. A
+  realtime `Sleep` never resumes while the clock is negative: `DoSleep` stores
+  0 as the game time to wait for, and `OnTimer` waits for `Game.Time` to reach
+  it.
 - Lua errors inside GUI callbacks are caught, shown in a dialog and appended to
   `MMCheatError.log` in the game folder, with a traceback.
 - Ask users who report a crash for that file.

@@ -259,6 +259,10 @@ Game score is calculated based on the total experience of all characters in the 
 
 Time exiting the Hive + 10min is used by MM6 (not sure about 7 and 8); this extra time is not calculated here.
 
+The game records absolute times: when regeneration last ran, when a shop restocks, when the map was last refilled. Its checks are "now minus the recorded time", so a time that ends up in the future never comes due again — after setting the clock back, HP/SP regeneration, poison and disease damage stop ticking until the old date is reached again. "Apply" repairs this: recorded times that lie in the future are pulled back to the new time, and when you move the clock backwards, pending ones (shop and guild restocking, bounty hunts, shop bans) are moved back by the same amount so they stay the same distance away. Moving the clock forward is untouched, so it still restocks shops and respawns monsters.
+
+If a save is already stuck because an earlier MMCheat version set the date back, open this tab and click "Apply" once (the current date is fine) to get the timers running again.
+
 The "Snow" checkbox is unchecked by default even if the weather is snow in the game, but it doesn't matter. You can check or leave it unchecked and click "Apply", and it will make it snow or stop snowing.
 
 ## Arcomage Tab
@@ -320,6 +324,11 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 - Scripts\Modules\MMCheat\data\<MOD_NAME>\_defaultcoords.lua
 
 ## Changelog
+
+### <a id="v2.0.0"></a>[2.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.0) (2026-09-01)
+
+- **Setting the date back no longer stops the game's timers.** HP/SP regeneration and poison and disease damage went silent until the old date came round again, because the game records when they last ran and compares "now minus that". "Apply" now brings those records back with the clock, and repairs a save an earlier version left stuck.
+- Shop and guild restocking, bounty hunts and shop bans keep the same distance away when the clock is moved backwards. Moving it forward is unchanged, so it still restocks shops and respawns monsters.
 
 ### <a id="v1.1.0"></a>[1.1.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.1.0) (2026-09-01)
 
