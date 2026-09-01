@@ -26,6 +26,8 @@ The [Might and Magic Merge](https://www.celestialheavens.com/forum/topic/16657) 
 
 1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.0.1/MMCheat-1.0.1.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
 
+_MMCheat's UI library (IUP 3.32, the bundled ExeMods\iup.dll) requires the Microsoft Visual C++ 2015–2022 (x86) runtime, which is preinstalled on most Windows systems. If MMCheat fails to start, install the [x86 redistributable](https://aka.ms/vs/17/release/vc_redist.x86.exe). On Linux/Wine, install it with `winetricks vcrun2022`._
+
 ## Important General Notes
 
 In the game (with map loaded), press <kbd>Ctrl</kbd> + <kbd>Backspace</kbd> to open MMCheat.

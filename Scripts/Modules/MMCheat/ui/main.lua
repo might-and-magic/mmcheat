@@ -74,7 +74,21 @@ local function main()
 		TITLE = about.short_name .. i18n._("colon") .. i18n._("title") .. " v" .. about.version
 	})
 
+	-- In the game process, IUP 3.32 measures the window decoration height
+	-- wrong (~400px instead of ~40px) at every layout computation that happens
+	-- before the dialog window has actually been shown once, which made the
+	-- dialog open far too tall. Workaround: show it fully transparent first
+	-- (so nothing wrong is visible), then - with the window metrics now
+	-- settled - reset the size, recompute the layout, re-center, and reveal.
+	iup.SetAttribute(dlg, "OPACITY", "0")
 	iup.ShowXY(dlg, iup.CENTER, iup.CENTER)
+	pcall(function()
+		iup.SetAttribute(dlg, "SIZE", nil)
+		iup.Refresh(dlg)
+		iup.ShowXY(dlg, iup.CENTER, iup.CENTER)
+	end)
+	-- always reveal, even if the re-layout above failed for any reason
+	iup.SetAttribute(dlg, "OPACITY", "255")
 
 	-- dialog opens, pause game
 	-- Game.DoPause()

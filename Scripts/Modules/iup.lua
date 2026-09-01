@@ -1,5 +1,6 @@
 ------------------------------------------------------------------------
---  Binding for IUP v3.12.0
+--  Binding for IUP (declares the 3.12 API surface, used with IUP 3.32;
+--  the IUP C API is backward compatible)
 --  MIT License
 --  Originally from https://github.com/Playermet/luajit-iup by Playermet
 --  Modified by Tom Chen (tomchen.org)
@@ -9,11 +10,11 @@ local ffi = require 'ffi'
 local const = {}
 
 const._NAME = 'IUP - Portable User Interface'
-const._COPYRIGHT = 'Copyright (C) 1994-2014 Tecgraf, PUC-Rio.'
+const._COPYRIGHT = 'Copyright (C) 1994-2020 Tecgraf, PUC-Rio.'
 const._DESCRIPTION = 'Multi-platform toolkit for building graphical user interfaces.'
-const._VERSION = '3.12'
-const._VERSION_NUMBER = 312000
-const._VERSION_DATE = '2014/11/19'
+const._VERSION = '3.32'
+const._VERSION_NUMBER = 332000
+const._VERSION_DATE = '2020/12/14'
 
 const.ERROR = 1
 const.NOERROR = 0
@@ -1930,6 +1931,10 @@ function help.attrname(name)
 end
 
 function help.attrvalue(value)
+  if value == nil then
+    -- a real NULL resets the attribute in IUP (tostring would give "nil")
+    return nil
+  end
   return type(value) ~= 'cdata' and tostring(value) or value
 end
 
