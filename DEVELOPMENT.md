@@ -93,13 +93,21 @@ needs) are shipped with MMCheat but not kept in git. They live in a dedicated
 release tagged `binaries`, which both `build.sh`/`build.ps1` and CI download
 from. To create or refresh it:
 
+In the web interface: *Releases* → *Draft a new release* → tag `binaries` →
+tick **Set as a pre-release** → attach `ExeMods\iup.dll` and
+`vcruntime140.dll` → publish. With the [GitHub CLI](https://cli.github.com):
+
 ```sh
 gh release create binaries ExeMods/iup.dll vcruntime140.dll \
+  --prerelease \
   --title "Bundled binaries" \
-  --notes "Binaries shipped with MMCheat releases: IUP (GUI toolkit) and the VC++ runtime it needs."
+  --notes "Third party binaries that MMCheat ships but does not keep in git: IUP 3.32 (GUI toolkit, from https://sourceforge.net/projects/iup/files/) and the Microsoft Visual C++ runtime it needs (x86). Downloaded from here by build.sh / build.ps1 and by the release workflow. This is a file store, not an MMCheat version."
 # later updates:
 gh release upload binaries ExeMods/iup.dll vcruntime140.dll --clobber
 ```
+
+Keep it a **pre-release**: otherwise this file store takes the "Latest
+release" badge away from the newest MMCheat version.
 
 `MMCHEAT_BINARIES_TAG` / `MMCHEAT_BINARIES_URL` override where they come from.
 
