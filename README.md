@@ -28,6 +28,15 @@ The [Might and Magic Merge](https://www.celestialheavens.com/forum/topic/16657) 
 
 _MMCheat's UI library (IUP 3.32, the bundled ExeMods\iup.dll) requires the Microsoft Visual C++ 2015–2022 (x86) runtime. MMCheat ships the required vcruntime140.dll in the game directory, so normally nothing needs to be installed. If MMCheat still fails to start, install the [x86 redistributable](https://aka.ms/vs/17/release/vc_redist.x86.exe) (on Linux/Wine: `winetricks vcrun2022`)._
 
+### Linux (Wine)
+
+MMCheat runs under Wine, but it opens a native window on top of a game that would rather own the whole screen, and that is where most of the reported freezes come from. Two settings make it far more reliable, both found by players running it this way:
+
+- Set a **virtual desktop** in Wine, with its resolution set to your native one
+- Play **windowed** — press <kbd>F4</kbd> in the game. Moving the game window once afterwards, which rescales it, helps as well
+
+If MMCheat still fails, `MMCheatError.log` in the game folder holds a traceback; please attach it to an [issue](https://github.com/might-and-magic/mmcheat/issues).
+
 ## Important General Notes
 
 In the game (with map loaded), press <kbd>Ctrl</kbd> + <kbd>Backspace</kbd> to open MMCheat.
