@@ -17,7 +17,7 @@ MMCheat.
 | `Scripts/Modules/iup.lua` | LuaJIT FFI binding for the IUP GUI toolkit |
 | `ExeMods/iup.dll` | IUP 3.32, not in git (see [Bundled binaries](#bundled-binaries)) |
 | `vcruntime140.dll` | VC++ runtime needed by IUP, not in git |
-| `build.sh`, `build.ps1` | build the release package |
+| `build.sh` | builds the release package (`build.ps1` is a Windows wrapper for it) |
 | `tools/` | packaging helpers and in-game test scripts |
 
 ## Setting up a development install
@@ -46,7 +46,7 @@ MMCheat.
 3. Add the two binaries that are not kept in git:
 
    ```sh
-   ./build.sh --fetch-binaries      # or: .\build.ps1 -FetchBinaries
+   ./build.sh --fetch-binaries      # or: .\build.ps1 --fetch-binaries
    ```
 
    They can also be downloaded by hand from the `binaries` release into
@@ -60,16 +60,21 @@ MMCheat.
 
 ```sh
 ./build.sh          # Linux, macOS, Git Bash - also what CI uses
-.\build.ps1         # Windows PowerShell, produces the same package
+.\build.ps1         # Windows, same flags: it runs build.sh
 ```
 
-Both assemble `build/` and write `dist/MMCheat-<version>.zip`, whose layout is
-what users extract into their game folder. `--no-zip` / `-NoZip` stops after
-`build/`; `--version` / `-ShowVersion` prints the version from `about.lua`.
+It assembles `build/` and writes `dist/MMCheat-<version>.zip`, whose layout is
+what users extract into their game folder. `--no-zip` stops after `build/`;
+`--version` prints the version from `about.lua`.
 
-The scripts need a zip tool: `zip`, `7z`, or PowerShell (used automatically on
+`build.ps1` and `tools/mmextension.ps1` are wrappers around the shell scripts,
+not ports: what goes into a package would otherwise be written down twice and
+drift apart. They use the bash that comes with Git for Windows, which any
+clone of this repository implies.
+
+Zipping needs `zip`, `7z`, or PowerShell — the last is picked automatically on
 Windows through `tools/zip.ps1`, which writes standard forward-slash entry
-names).
+names (`ZipFile::CreateFromDirectory` would use backslashes).
 
 ## Releasing
 
