@@ -1,0 +1,157 @@
+# MMCheat development
+
+Notes for working on MMCheat itself. For using it, see [README.md](README.md).
+
+## What this repository is
+
+MMCheat is a set of Lua scripts that live **inside a Might and Magic game
+folder**, so this repository is meant to be checked out into such a folder: its
+paths (`Scripts/General/`, `Scripts/Modules/`, `ExeMods/`) are the game's own
+paths, and `.gitignore` ignores everything except the files that belong to
+MMCheat.
+
+| path | what it is |
+| --- | --- |
+| `Scripts/General/MMCheat.lua` | entry point loaded by MMExtension, binds <kbd>Ctrl</kbd>+<kbd>Backspace</kbd> |
+| `Scripts/Modules/MMCheat/` | all of MMCheat (UI, utilities, i18n, data) |
+| `Scripts/Modules/iup.lua` | LuaJIT FFI binding for the IUP GUI toolkit |
+| `ExeMods/iup.dll` | IUP 3.32, not in git (see [Bundled binaries](#bundled-binaries)) |
+| `vcruntime140.dll` | VC++ runtime needed by IUP, not in git |
+| `build.sh`, `build.ps1` | build the release package |
+| `tools/` | packaging helpers and in-game test scripts |
+
+## Setting up a development install
+
+1. Install a game MMCheat supports:
+   - **MMMerge** (latest, includes MMExtension 2.3), or
+   - **MM6, MM7 or MM8** + the [GrayFace patch](https://grayface.github.io/mm/)
+     + [MMExtension 2.3](https://github.com/GrayFace/MMExtension)
+     (the MMExtension zip linked from README.md is a packaged snapshot of that
+     repository, see [MMExtension snapshots](#mmextension-snapshots)).
+
+2. Turn the game folder into a working tree of this repository. Cloning into a
+   non-empty folder is not possible, so fetch into it instead:
+
+   ```sh
+   cd "<game folder>"
+   git init
+   git remote add origin https://github.com/might-and-magic/mmcheat.git
+   git fetch origin
+   git checkout -t origin/main
+   ```
+
+   Everything that is not MMCheat stays untracked: `.gitignore` ignores the
+   whole folder and then re-includes only MMCheat's files.
+
+3. Add the two binaries that are not kept in git:
+
+   ```sh
+   ./build.sh --fetch-binaries      # or: .\build.ps1 -FetchBinaries
+   ```
+
+   They can also be downloaded by hand from the `binaries` release into
+   `ExeMods\iup.dll` and `vcruntime140.dll` (game folder root).
+
+4. Start the game and press <kbd>Ctrl</kbd>+<kbd>Backspace</kbd>. Lua files are
+   read when MMCheat opens, so most changes only need the dialog to be
+   reopened; changes to `Scripts/General/MMCheat.lua` need a game restart.
+
+## Building
+
+```sh
+./build.sh          # Linux, macOS, Git Bash - also what CI uses
+.\build.ps1         # Windows PowerShell, produces the same package
+```
+
+Both assemble `build/` and write `dist/MMCheat-<version>.zip`, whose layout is
+what users extract into their game folder. `--no-zip` / `-NoZip` stops after
+`build/`; `--version` / `-ShowVersion` prints the version from `about.lua`.
+
+The scripts need a zip tool: `zip`, `7z`, or PowerShell (used automatically on
+Windows through `tools/zip.ps1`, which writes standard forward-slash entry
+names).
+
+## Releasing
+
+1. Bump `version` and `version_date` in `Scripts/Modules/MMCheat/about.lua`,
+   and update the download links in `README.md`.
+2. Commit, then push a tag that matches the version:
+
+   ```sh
+   git tag v1.2.3
+   git push origin v1.2.3
+   ```
+
+3. `.github/workflows/release.yml` verifies that the tag matches `about.lua`,
+   downloads the bundled binaries, builds, and creates the GitHub release with
+   `MMCheat-<version>.zip` attached.
+
+## Bundled binaries
+
+`ExeMods/iup.dll` (IUP 3.32) and `vcruntime140.dll` (the VC++ runtime IUP
+needs) are shipped with MMCheat but not kept in git. They live in a dedicated
+release tagged `binaries`, which both `build.sh`/`build.ps1` and CI download
+from. To create or refresh it:
+
+```sh
+gh release create binaries ExeMods/iup.dll vcruntime140.dll \
+  --title "Bundled binaries" \
+  --notes "Binaries shipped with MMCheat releases: IUP (GUI toolkit) and the VC++ runtime it needs."
+# later updates:
+gh release upload binaries ExeMods/iup.dll vcruntime140.dll --clobber
+```
+
+`MMCHEAT_BINARIES_TAG` / `MMCHEAT_BINARIES_URL` override where they come from.
+
+IUP itself is downloaded from
+<https://sourceforge.net/projects/iup/files/> (Windows 32 bit dynamic
+libraries); `vcruntime140.dll` is the 32 bit Microsoft redistributable, which
+is shipped next to the game executable so users do not have to install it.
+
+## MMExtension snapshots
+
+MMExtension has no releases: it is distributed as the contents of
+[its repository](https://github.com/GrayFace/MMExtension). For MM6/7/8 users
+MMCheat therefore links to a packaged snapshot of that repository,
+`MMExtension-<version>-<commit date>.zip`, built by `tools/mmextension.sh`:
+
+```sh
+tools/mmextension.sh check    # is upstream newer than what we ship?
+tools/mmextension.sh fetch    # package upstream HEAD into dist/
+```
+
+The version comes from upstream's `FILEVERSION` resource and the date from the
+commit (UTC), so the name is reproducible. The zip contains `ExeMods/` and
+`Scripts/` minus the map editor, documentation generation and developer
+helpers, plus `Misc/KillObsolete/Scripts/` merged into `Scripts/` — exactly the
+selection of the hand-made `MMExtension-2.3-20250115.zip`; the script
+reproduces that package file for file. `tools/mmextension.env` records the
+snapshot that is currently shipped.
+
+`.github/workflows/mmextension.yml` checks upstream weekly and opens (or
+comments on) an issue with the packaged zip attached to the run. Running that
+workflow manually with **publish** enabled uploads the zip to the `mmextension`
+release and records it in `tools/mmextension.env`.
+
+## Testing in the game
+
+- `tools/test_blv_ingame.lua` — copy into `Scripts/Global/`, load a save and
+  press <kbd>Ctrl</kbd>+<kbd>F9</kbd> to parse the outlines of every indoor map
+  and write `mmcheat_blv_test.log`. Delete it from `Scripts/Global/` afterwards.
+- Lua errors inside GUI callbacks are caught, shown in a dialog and appended to
+  `MMCheatError.log` in the game folder, with a traceback.
+- Ask users who report a crash for that file.
+
+### IUP quirks worth knowing
+
+Two workarounds in `Scripts/Modules/MMCheat/ui/main.lua` look odd but are
+needed; removing them brings back bugs that are hard to diagnose:
+
+- The dialog is shown fully transparent, re-laid out, re-centered and only then
+  revealed. Before the dialog has been shown once, IUP measures the window
+  decoration wrongly in the game process and the dialog opens far too tall.
+- `EXITLOOP` is set to `NO` before the dialog is torn down. IUP ends its
+  message loop by posting `WM_QUIT`; while tearing down the last visible dialog
+  it posts another one that no IUP loop consumes, and the game's own message
+  loop then receives it and exits — every "apply and close" button appeared to
+  crash the game.

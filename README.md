@@ -319,6 +319,10 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 
 - Scripts\Modules\MMCheat\data\<MOD_NAME>\_defaultcoords.lua
 
+## Development
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for how to set up a development install, build the release package, and how the bundled IUP binaries and the packaged MMExtension snapshots are produced.
+
 ## Copyright
 
 See [CREDIT.md](CREDIT.md)

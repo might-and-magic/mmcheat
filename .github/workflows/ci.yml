@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lua-syntax:
+    name: Lua syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # MMCheat runs on the LuaJIT that ships with MMExtension, so check the
+      # syntax with LuaJIT rather than with plain Lua
+      - name: Install LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq luajit
+
+      - name: Compile every Lua file
+        run: |
+          status=0
+          for f in $(git ls-files '*.lua'); do
+            if ! out=$(luajit -b "$f" /dev/null 2>&1); then
+              echo "::error file=$f::$out"
+              status=1
+            fi
+          done
+          exit $status
+
+  shell-scripts:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        run: shellcheck build.sh tools/lib.sh tools/mmextension.sh
+
+      - name: Build (without the bundled binaries)
+        env:
+          # dummy binaries: this job only checks that the build script itself
+          # works, the real ones are added by the release workflow
+          MMCHEAT_BINARIES_URL: unused
+        run: |
+          mkdir -p ExeMods
+          : > ExeMods/iup.dll
+          : > vcruntime140.dll
+          ./build.sh
+          unzip -l dist/MMCheat-*.zip | tail -n 3

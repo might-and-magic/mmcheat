@@ -1,0 +1,95 @@
+name: MMExtension snapshot
+
+# MMExtension has no releases of its own, so MMCheat ships a packaged snapshot
+# of its repository (see tools/mmextension.sh). This workflow watches upstream
+# and, when it moved on, packages a new snapshot.
+#
+# Scheduled runs only report (artifact + issue). To publish, run the workflow
+# manually with "publish" enabled: the zip is then uploaded to the
+# "mmextension" release and tools/mmextension.env is updated on main.
+on:
+  schedule:
+    - cron: "17 6 * * 1" # every Monday
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the snapshot and record it in tools/mmextension.env
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  SNAPSHOT_TAG: mmextension
+  ISSUE_TITLE: MMExtension upstream has a newer snapshot
+
+jobs:
+  snapshot:
+    name: Check upstream
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare with the recorded snapshot
+        id: check
+        run: tools/mmextension.sh check | tee -a "$GITHUB_OUTPUT"
+
+      - name: Package the new snapshot
+        id: fetch
+        if: steps.check.outputs.MMEXT_STATUS == 'outdated'
+        run: |
+          tools/mmextension.sh fetch ${{ inputs.publish && '--update-env' || '' }} \
+            | tee -a "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.MMEXT_STATUS == 'outdated'
+        with:
+          name: MMExtension-${{ steps.fetch.outputs.MMEXT_VERSION }}-${{ steps.fetch.outputs.MMEXT_DATE }}
+          path: dist/*.zip
+
+      - name: Publish the snapshot
+        if: steps.check.outputs.MMEXT_STATUS == 'outdated' && inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$SNAPSHOT_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$SNAPSHOT_TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "MMExtension snapshots" \
+              --notes "Packaged snapshots of https://github.com/GrayFace/MMExtension for MMCheat users, built by tools/mmextension.sh."
+          fi
+          gh release upload "$SNAPSHOT_TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/mmextension.env
+          git commit -m "Record MMExtension snapshot ${{ steps.fetch.outputs.MMEXT_DATE }}"
+          git push origin HEAD:main
+
+      - name: Report the new snapshot
+        if: steps.check.outputs.MMEXT_STATUS == 'outdated' && !inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          body=$(cat <<EOF
+          Upstream [GrayFace/MMExtension](https://github.com/GrayFace/MMExtension) has commits newer than the snapshot MMCheat ships.
+
+          | | recorded | upstream |
+          |---|---|---|
+          | commit | \`${{ steps.check.outputs.MMEXT_RECORDED_COMMIT }}\` | \`${{ steps.check.outputs.MMEXT_UPSTREAM_COMMIT }}\` |
+          | date | ${{ steps.check.outputs.MMEXT_RECORDED_DATE }} | ${{ steps.fetch.outputs.MMEXT_DATE }} |
+          | version | | ${{ steps.fetch.outputs.MMEXT_VERSION }} |
+
+          A package (\`${{ steps.fetch.outputs.MMEXT_ZIP }}\`, ${{ steps.fetch.outputs.MMEXT_FILES }} files) is attached to [this workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) as an artifact.
+
+          To publish it, run this workflow manually with **publish** enabled, then update the MMExtension download link in README.md.
+          EOF
+          )
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "\"$ISSUE_TITLE\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$ISSUE_TITLE" --body "$body"
+          fi

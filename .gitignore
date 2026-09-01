@@ -8,7 +8,11 @@
 !README.md
 !LICENSE.md
 !CREDIT.md
-!extract_build.cmd
+!DEVELOPMENT.md
+!build.sh
+!build.ps1
+
+!.github/
 
 !Scripts/
 Scripts/*
