@@ -16,7 +16,7 @@ For the standard (CD/GOG/Uplay) versions of _Might and Magic 6_, _7_, or _8_ RPG
 
 1. Download and apply the [GrayFace Patch](https://grayface.github.io/mm/#GrayFace-MM6-Patch) for your game
 2. Download [MMExtension 2.3](https://github.com/might-and-magic/mmcheat/releases/download/mmextension/MMExtension-2.3-20260406.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
-3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.1.0/MMCheat-1.1.0.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
+3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.0/MMCheat-2.0.0.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
 
 _You must use the link above to download MMExtension 2.3 fetched from its [GitHub repository](https://github.com/GrayFace/MMExtension) instead of its [web page](https://grayface.github.io/mm/ext/) which still has the outdated v2.2 version._
 
@@ -24,7 +24,7 @@ _You must use the link above to download MMExtension 2.3 fetched from its [GitHu
 
 The [Might and Magic Merge](https://www.celestialheavens.com/forum/topic/16657) is a mod based on the _Might and Magic 8_ GrayFace patch and MMExtension. You must use the **latest MMMerge** version which includes MMExtension 2.3. MMCheat can be used directly with it:
 
-1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v1.1.0/MMCheat-1.1.0.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
+1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.0/MMCheat-2.0.0.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
 
 _MMCheat's UI library (IUP 3.32, the bundled ExeMods\iup.dll) requires the Microsoft Visual C++ 2015–2022 (x86) runtime. MMCheat ships the required vcruntime140.dll in the game directory, so normally nothing needs to be installed. If MMCheat still fails to start, install the [x86 redistributable](https://aka.ms/vs/17/release/vc_redist.x86.exe) (on Linux/Wine: `winetricks vcrun2022`)._
 
