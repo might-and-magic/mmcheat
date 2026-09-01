@@ -58,7 +58,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if ! gh release view "$SNAPSHOT_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            # --prerelease keeps this file store from taking the "Latest
+            # release" badge away from the newest MMCheat version
             gh release create "$SNAPSHOT_TAG" --repo "$GITHUB_REPOSITORY" \
+              --prerelease \
               --title "MMExtension snapshots" \
               --notes "Packaged snapshots of https://github.com/GrayFace/MMExtension for MMCheat users, built by tools/mmextension.sh."
           fi
