@@ -52,7 +52,6 @@ only prints how the recorded snapshot compares with upstream.
 
 On Windows run tools\mmextension.ps1 with the same arguments.
 EOF
-	exit "${1:-0}"
 }
 
 upstream_head() {
@@ -202,7 +201,10 @@ fetch)
 	shift
 	cmd_fetch "$@"
 	;;
--h | --help | help) usage ;;
+-h | --help | help)
+	usage
+	exit 0
+	;;
 --*) cmd_fetch "$@" ;; # options given without the "fetch" word
 *) die "unknown command: $1 (try --help)" ;;
 esac
