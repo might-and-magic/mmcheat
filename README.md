@@ -336,6 +336,10 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 
 ## Changelog
 
+### <a id="v2.0.1"></a>[2.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.1) (2026-09-06)
+
+- **Fixed missing UI translations with Elemental Mod and other unrecognized game languages.** MMCheat now loads English when automatic language detection fails, restoring parentheses in character and item names and the "Inventory & Equipment" label.
+
 ### <a id="v2.0.0"></a>[2.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.0) (2026-09-01)
 
 - **Setting the date back no longer stops the game's timers.** HP/SP regeneration and damage over time stopped until the old date came round again; "Apply" now moves the game's records back with the clock, and repairs a stuck save.

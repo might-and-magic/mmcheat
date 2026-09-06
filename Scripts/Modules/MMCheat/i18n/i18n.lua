@@ -132,7 +132,8 @@ function M.init()
 	if not lang then
 		lang = M.detect_lang()
 		if not lang then
-			return fallback_lang
+			-- Mods may change the text used for language detection.
+			lang = fallback_lang
 		end
 		should_write_ini = true
 	end
