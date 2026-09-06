@@ -16,7 +16,7 @@ For the standard (CD/GOG/Uplay) versions of _Might and Magic 6_, _7_, or _8_ RPG
 
 1. Download and apply the [GrayFace Patch](https://grayface.github.io/mm/#GrayFace-MM6-Patch) for your game
 2. Download [MMExtension 2.3](https://github.com/might-and-magic/mmcheat/releases/download/mmextension/MMExtension-2.3-20260406.zip) and extract the "ExeMods" and "Scripts" folders to your game directory (overwrite existing files if any)
-3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.1/MMCheat-2.0.1.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
+3. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.2/MMCheat-2.0.2.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
 
 _You must use the link above to download MMExtension 2.3 fetched from its [GitHub repository](https://github.com/GrayFace/MMExtension) instead of its [web page](https://grayface.github.io/mm/ext/) which still has the outdated v2.2 version._
 
@@ -24,18 +24,18 @@ _You must use the link above to download MMExtension 2.3 fetched from its [GitHu
 
 The [Might and Magic Merge](https://www.celestialheavens.com/forum/topic/16657) is a mod based on the _Might and Magic 8_ GrayFace patch and MMExtension. You must use the **latest MMMerge** version which includes MMExtension 2.3. MMCheat can be used directly with it:
 
-1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.1/MMCheat-2.0.1.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
-
-_MMCheat's UI library (IUP 3.32, the bundled ExeMods\iup.dll) requires the Microsoft Visual C++ 2015–2022 (x86) runtime. MMCheat ships the required vcruntime140.dll in the game directory, so normally nothing needs to be installed. If MMCheat still fails to start, install the [x86 redistributable](https://aka.ms/vs/17/release/vc_redist.x86.exe) (on Linux/Wine: `winetricks vcrun2022`)._
+1. Download [MMCheat](https://github.com/might-and-magic/mmcheat/releases/download/v2.0.2/MMCheat-2.0.2.zip) and extract its contents (the "ExeMods" and "Scripts" folders and vcruntime140.dll) to your game directory (overwrite existing files if any)
 
 ### Linux (Wine)
 
 MMCheat opens a window on top of a game that would rather own the screen, which is where most freezes under Wine come from. Two settings avoid nearly all of them:
 
-- Set a **virtual desktop** in Wine, at your native resolution
-- Play **windowed** (<kbd>F4</kbd> in the game); moving the window once afterwards helps too
+- Set a **virtual desktop** in Wine, at your native resolution. <kbd>F4</kbd> only toggles fullscreen cleanly inside one; without it the toggle leaves the window at its old size and repaints over the status bar.
+- Play **windowed** (<kbd>F4</kbd> in the game); moving the window once afterwards helps too. Windowed play works with or without a virtual desktop.
 
 If it still fails, `MMCheatError.log` in the game folder has a traceback — please attach it to an [issue](https://github.com/might-and-magic/mmcheat/issues).
+
+_Before any of that, the game itself has to start. If `MM8Setup.exe` is set to "Hardware 3D (DirectDraw HAL)" and the game dies on launch with `Init - Failed to create D3D device`, Wine could not load a **32-bit** OpenGL library. The game is a 32-bit program, so the 64-bit GL packages a desktop already has do not count, and this happens even on a machine whose 3D drivers are otherwise fine. On Debian/Ubuntu: `sudo apt install libgl1:i386 libglx0:i386 libglx-mesa0:i386 libgl1-mesa-dri:i386`. Picking software rendering in `MM8Setup.exe` also avoids the crash, at the cost of the hardware renderer._
 
 ## Important General Notes
 
@@ -256,7 +256,7 @@ In "Looting", set the percentage to 0 for infinite looting.
 
 ![Spells Tab](intro_imgs/8.png)
 
-"Cast any spell" is MM8 (and MMMerge)-only for now.
+"Cast any spell" is available in MM6, MM7, MM8, and MMMerge. Spells that require selecting an inventory item are skipped.
 
 Unlimited daily castings change is not persistent; it will be reset after game reload or exit.
 
@@ -336,15 +336,28 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 
 ## Changelog
 
-### <a id="v2.0.1"></a>[2.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.1) (2026-09-06)
+### [2.0.2](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.2)
 
-- **Fixed missing UI translations with Elemental Mod and other unrecognized game languages.** MMCheat now loads English when automatic language detection fails, restoring parentheses in character and item names and the "Inventory & Equipment" label.
+(2026-09-06)
 
-### <a id="v2.0.0"></a>[2.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.0) (2026-09-01)
+- **"Cast any spell" now works in MM6 and MM7.**
+- **Monster → Summon now displays a body preview of the selected monster.**
+
+### [2.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.1)
+
+(2026-09-06)
+
+- **Fixed missing UI translations with Elemental Mod and other unrecognized game languages.** MMCheat now loads English when automatic language detection fails.
+
+### [2.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v2.0.0)
+
+(2026-09-01)
 
 - **Setting the date back no longer stops the game's timers.** HP/SP regeneration and damage over time stopped until the old date came round again; "Apply" now moves the game's records back with the clock, and repairs a stuck save.
 
-### <a id="v1.1.0"></a>[1.1.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.1.0) (2026-09-01)
+### [1.1.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.1.0)
+
+(2026-09-01)
 
 - **Stability work on the UI layer**: Lua errors in callbacks are caught and reported (dialog + MMCheatError.log) instead of crossing into the C library, IUP is opened once per process and paired with `IupClose` again, and the dialog is destroyed before its callbacks are freed.
 - **"Apply and close" buttons no longer make the game exit silently** (IUP's leftover `WM_QUIT` reached the game's message loop).
@@ -354,12 +367,16 @@ If you want map-default teleport coordinates to work on other mods, you can opti
 - **No runtime install needed**: vcruntime140.dll (x86) ships with MMCheat.
 - **Build and release tooling**: build.sh / build.ps1, MMExtension snapshot packaging and CI — see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-### <a id="v1.0.1"></a>[1.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.1) (2025-06-23)
+### [1.0.1](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.1)
+
+(2025-06-23)
 
 - The window title now starts with "MMCheat".
 - "Apply All Changes Below" got a tooltip naming the sub-tabs it does not cover.
 
-### <a id="v1.0.0"></a>[1.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.0) (2025-06-22)
+### [1.0.0](https://github.com/might-and-magic/mmcheat/releases/tag/v1.0.0)
+
+(2025-06-22)
 
 - First release: all tabs, for MM6/7/8 and MMMerge, UI in 14 languages.
 

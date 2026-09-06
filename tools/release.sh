@@ -126,15 +126,17 @@ missing, so the new snapshot cannot be published. Install it, or re-run with
 fi
 
 # ------------------------------------------------------------- 3. changelog
-# the release notes link to README.md#v<version>, so the section has to exist
+# the release notes link to the version heading, so the section has to exist
 info "== checking the changelog entry for $version"
-grep -q "<a id=\"v$version\"></a>" "$README" ||
+grep -Fq "### [$version]($REPO_URL/releases/tag/v$version)" "$README" ||
 	die "$README has no changelog entry for $version. Add one under
 \"## Changelog\", starting with:
 
-  ### <a id=\"v$version\"></a>[$version]($REPO_URL/releases/tag/v$version) ($(TZ=UTC0 date +%Y-%m-%d))
+  ### [$version]($REPO_URL/releases/tag/v$version)
 
-The GitHub release notes link to that anchor."
+  ($(TZ=UTC0 date +%Y-%m-%d))
+
+The GitHub release notes link to that heading."
 
 # ---------------------------------------------------------------- 4. README
 # shellcheck disable=SC1090

@@ -3,15 +3,33 @@ local iup = require("iup")
 local utils = require("MMCheat/util/utils")
 local i18n = require("MMCheat/i18n/i18n")
 local enc = require("MMCheat/i18n/encoding")
+local ImageLabel = require("MMCheat/ui/components/ImageLabel")
+local mmsprite = require("MMCheat/util/image/mmsprite")
+
+local monster_image_width = 260
+local monster_image_height = 300
 
 local M = {}
 
 local summon_monster_select
 local looted_corpse_disappear_chance_input
+local monster_image_label_obj
+
+local function load_selected_monster_image()
+	local monster_id = iup.GetInt(summon_monster_select, "VALUE")
+	local ok, preview = pcall(mmsprite.get_monster_preview, monster_id, monster_image_width, monster_image_height)
+	if ok and preview then
+		monster_image_label_obj:load_pixels(preview.width, preview.height, preview.pixels)
+		monster_image_label_obj:set_filename(preview.filename)
+	else
+		monster_image_label_obj:load_pixels(monster_image_width, monster_image_height)
+	end
+end
 
 function M.cleanup()
 	summon_monster_select = nil
 	looted_corpse_disappear_chance_input = nil
+	monster_image_label_obj = nil
 end
 
 function M.firstload()
@@ -23,6 +41,7 @@ function M.firstload()
 	end
 
 	utils.load_select_options(summon_monster_select, monster_options, false, 1)
+	load_selected_monster_image()
 
 	-- Load looted corpse disappear chance value
 	iup.SetAttribute(looted_corpse_disappear_chance_input, "VALUE", utils.GetLootedCorpseDisapProb())
@@ -30,6 +49,10 @@ end
 
 function M.create()
 	summon_monster_select = ui.select {}
+	monster_image_label_obj = ImageLabel:new({
+		width = monster_image_width,
+		height = monster_image_height
+	})
 	looted_corpse_disappear_chance_input = ui.uint_input(0, {
 		SIZE = "40x",
 		SPINMAX = 100
@@ -54,6 +77,11 @@ function M.create()
 		return iup.DEFAULT
 	end)
 
+	iup.SetCallback(summon_monster_select, "VALUECHANGED_CB", function()
+		load_selected_monster_image()
+		return iup.DEFAULT
+	end)
+
 	iup.SetCallback(looted_corpse_disappear_chance_input, "VALUECHANGED_CB", function()
 		local value = iup.GetInt(looted_corpse_disappear_chance_input, "VALUE")
 		if value < 0 then
@@ -70,7 +98,9 @@ function M.create()
 		return iup.DEFAULT
 	end)
 
-	return ui.vbox({ ui.frame(i18n._("summon"), { ui.hbox({ summon_monster_select, monster_ok_button }) }),
+	return ui.vbox({ ui.frame(i18n._("summon"), { ui.vbox({
+		ui.hbox({ summon_monster_select, monster_ok_button }), monster_image_label_obj.label
+	}, { ALIGNMENT = "ACENTER" }) }),
 		ui.frame(i18n._("looting"), { ui.labelled_fields(i18n._("looted_corpse_disappear_chance"),
 			{ looted_corpse_disappear_chance_input, ui.label("%"), looted_corpse_ok_button }, 120) }) }, {
 		TABTITLE = i18n._("monster"),

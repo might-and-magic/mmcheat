@@ -3,3 +3,4 @@
 # shell scripts must keep LF: CRLF breaks them on Linux/macOS (and in CI)
 *.sh text eol=lf
 *.yml text eol=lf
+*.env text eol=lf

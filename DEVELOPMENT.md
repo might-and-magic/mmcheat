@@ -96,9 +96,9 @@ It does the steps of a release in the order they depend on each other:
    writes its file name into the README. `--skip-mmextension` leaves the
    published snapshot as it is.
 3. **Changelog.** Refuses to go on unless README.md's *Changelog* section has
-   an entry for the new version, that is a heading carrying the anchor
-   `<a id="v1.2.3"></a>`. Write it before releasing: the GitHub release notes
-   link to that anchor.
+   a heading for the new version. Put the date on the following line so
+   GitHub gives the heading a stable version-only permalink. Write it before
+   releasing: the GitHub release notes link to that heading.
 4. **README.** Points both download links at the snapshot from step 2 and at
    the MMCheat version about to be released, and verifies afterwards that both
    links were really rewritten.
@@ -109,7 +109,7 @@ It does the steps of a release in the order they depend on each other:
    `about.lua`, downloads the bundled binaries, builds and creates the GitHub
    release with `MMCheat-1.2.3.zip` attached — the file the README now links
    to. The release notes it writes start with a link to
-   `README.md#v1.2.3`, the changelog entry from step 3, followed by GitHub's
+   `README.md#123`, the changelog entry from step 3, followed by GitHub's
    generated notes.
 
 Because the README links carry versions, the order above is not a checklist to

@@ -777,39 +777,77 @@ function M.format_item_info(item)
 	return enc.decode(item.Name) .. i18n._("left_paren") .. enc.decode(item.NotIdentifiedName) .. i18n._("right_paren")
 end
 
-function M.CastSpellDirect(SpellId, Skill, Mastery, Caster, Target, Flags, TargetKind)
-	if Game.Version == 8 then
-		if CastSpellDirect then
-			CastSpellDirect(SpellId, Skill, Mastery, Caster, Target, Flags, TargetKind)
-		else
-			-- The following code is from MM Merge
-			local spells_with_inventory_screen = {
-				[4] = 0,
-				[28] = 0,
-				[30] = 0,
-				[91] = 0
-			}
-			if spells_with_inventory_screen[SpellId] then
-				return
-			end
-
-			Caster = Caster or 49
-			if Caster == 49 then
-				local pl = Party.PlayersArray[Caster]
-				pl.SP = 1000
-				pl.DivineInterventionCasts = 0
-				pl.ArmageddonCasts = 0
-				pl.AgeBonus = 0
-			end
-
-			mem.u2[0x51d820] = SpellId
-			mem.u2[0x51d822] = Caster -- Caster - rosterId
-			mem.u2[0x51d824] = Target or 49 -- Target - rosterId
-			mem.u2[0x51d828] = Flags or 0x8020
-			mem.u2[0x51d82a] = JoinSkill(Skill or 1, Mastery or 0)
-			mem.u2[0x51d82c] = bit.lshift(Target or 0, 3) + (TargetKind or 4)
+local function spell_uses_inventory(SpellId)
+	local inventory_spell_names = {
+		"FireAura",
+		"RechargeItem",
+		"EnchantItem",
+		"GoldenTouch",
+		"VampiricWeapon"
+	}
+	for _, name in ipairs(inventory_spell_names) do
+		if SpellId == const.Spells[name] then
+			return true
 		end
 	end
+	return false
+end
+
+-- All three games use ten 0x14-byte entries for the player spell queue.
+local spell_queue = M.mm678(0x4d5b50, 0x50bf48, 0x51d820)
+local spell_queue_entry_size = 0x14
+local spell_queue_count = 10
+
+function M.CastSpellDirect(SpellId, Skill, Mastery, Caster, Target, Flags, TargetKind)
+	if spell_uses_inventory(SpellId) then
+		return false
+	end
+
+	if Game.Version == 8 and CastSpellDirect then
+		CastSpellDirect(SpellId, Skill, Mastery, Caster, Target, Flags, TargetKind)
+		return true
+	end
+
+	local entry
+	for i = 0, spell_queue_count - 1 do
+		local address = spell_queue + i * spell_queue_entry_size
+		if mem.u2[address] == 0 then
+			entry = address
+			break
+		end
+	end
+	if not entry then
+		return false
+	end
+
+	local target_was_provided = Target ~= nil
+	if Game.Version == 8 then
+		Caster = Caster or 49 -- MM8 roster id
+		Target = Target or 49 -- MM8 roster id
+	else
+		Caster = Caster or Party.GetCurrentPlayer():GetIndex()
+		Target = Target or Caster
+	end
+	local player = Game.Version == 8 and Party.PlayersArray[Caster] or Party[Caster]
+	if player then
+		player.DevineInterventionCasts = 0
+		player.ArmageddonCasts = 0
+	end
+
+	mem.u2[entry] = SpellId
+	mem.u2[entry + 0x2] = Caster
+	mem.u2[entry + 0x4] = Target
+	mem.u2[entry + 0x6] = 0
+	-- 0x20 skips recovery; an explicit skill makes the engine skip its usual SP and learned-skill checks.
+	mem.u2[entry + 0x8] = Flags or M.mm67or8(0x20, 0x8020)
+	mem.u2[entry + 0xa] = JoinSkill(Skill or 1, Mastery or 0)
+	if Game.Version == 8 then
+		mem.u4[entry + 0xc] = bit.lshift(target_was_provided and Target or 0, 3) + (TargetKind or 4)
+	else
+		mem.u4[entry + 0xc] = target_was_provided and (bit.lshift(Target, 3) + (TargetKind or 4)) or 0
+	end
+	mem.u4[entry + 0x10] = Game.Version == 8 and 0 or Caster + 1
+	return true
 end
 
 function M.set_fog(on)

@@ -58,10 +58,11 @@ jobs:
         run: |
           tag="${{ inputs.tag || github.ref_name }}"
           version="${{ steps.version.outputs.version }}"
-          # v<version> is the anchor README.md puts on this version's
-          # changelog heading; blob/HEAD follows the default branch, so the
-          # link keeps working after the tag was cut
-          notes="**What changed:** [MMCheat $version changelog]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/HEAD/README.md#v$version)"
+          # GitHub removes dots when it generates the anchor for the version
+          # heading; blob/HEAD follows the default branch, so the link keeps
+          # working after the tag was cut.
+          anchor="${version//./}"
+          notes="**What changed:** [MMCheat $version changelog]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/HEAD/README.md#$anchor)"
           gh release create "$tag" dist/MMCheat-*.zip \
             --repo "$GITHUB_REPOSITORY" \
             --title "MMCheat $version" \

@@ -143,56 +143,54 @@ function M.reload()
 end
 
 function M.firstload()
-	-- CAST SPELL (mm8 only)
-	if Game.Version == 8 then
-		-- Initialize spell list for cast_spell_select
-		local spell_names = {}
-		local spell_indexes = {}
-		for i = 1, Game.SpellsTxt.Count - 1 do
-			if Game.SpellsTxt[i].ShortName ~= '0' then
-				spell_names[#spell_names + 1] = enc.decode(Game.SpellsTxt[i].Name)
-				spell_indexes[#spell_names] = i
-			end
+	-- CAST SPELL
+	-- Initialize spell list for cast_spell_select
+	local spell_names = {}
+	local spell_indexes = {}
+	for i = 1, Game.SpellsTxt.Count - 1 do
+		if Game.SpellsTxt[i].ShortName ~= '0' then
+			spell_names[#spell_names + 1] = enc.decode(Game.SpellsTxt[i].Name)
+			spell_indexes[#spell_names] = i
 		end
-
-		-- Set spell select options
-		iup.SetAttribute(cast_spell_select, "COUNT", tostring(#spell_names))
-		for i, name in ipairs(spell_names) do
-			iup.SetAttribute(cast_spell_select, tostring(i), name)
-		end
-		iup.SetAttribute(cast_spell_select, "VALUE", "1")
-
-		-- Set callbacks for level and mastery interaction
-		iup.SetCallback(cast_spell_level, "VALUECHANGED_CB", function()
-			local value = iup.GetInt(cast_spell_level, "VALUE") or 1
-			if value < 1 then
-				iup.SetAttribute(cast_spell_level, "VALUE", "1")
-			end
-			return iup.DEFAULT
-		end)
-
-		iup.SetCallback(cast_spell_mastery, "VALUECHANGED_CB", function()
-			local value = iup.GetInt(cast_spell_mastery, "VALUE") or 1
-			if value < 1 then
-				iup.SetAttribute(cast_spell_mastery, "VALUE", "1")
-			end
-			return iup.DEFAULT
-		end)
-
-		iup.SetCallback(cast_spell_button, "ACTION", function()
-			local selected_index = iup.GetInt(cast_spell_select, "VALUE")
-			if selected_index then
-				local spell_id = spell_indexes[selected_index]
-				local level = iup.GetInt(cast_spell_level, "VALUE") or 1
-				local mastery = iup.GetInt(cast_spell_mastery, "VALUE") or 1
-
-				if spell_id then
-					utils.CastSpellDirect(spell_id, level, mastery)
-					return iup.CLOSE
-				end
-			end
-		end)
 	end
+
+	-- Set spell select options
+	iup.SetAttribute(cast_spell_select, "COUNT", tostring(#spell_names))
+	for i, name in ipairs(spell_names) do
+		iup.SetAttribute(cast_spell_select, tostring(i), name)
+	end
+	iup.SetAttribute(cast_spell_select, "VALUE", "1")
+
+	-- Set callbacks for level and mastery interaction
+	iup.SetCallback(cast_spell_level, "VALUECHANGED_CB", function()
+		local value = iup.GetInt(cast_spell_level, "VALUE") or 1
+		if value < 1 then
+			iup.SetAttribute(cast_spell_level, "VALUE", "1")
+		end
+		return iup.DEFAULT
+	end)
+
+	iup.SetCallback(cast_spell_mastery, "VALUECHANGED_CB", function()
+		local value = iup.GetInt(cast_spell_mastery, "VALUE") or 1
+		if value < 1 then
+			iup.SetAttribute(cast_spell_mastery, "VALUE", "1")
+		end
+		return iup.DEFAULT
+	end)
+
+	iup.SetCallback(cast_spell_button, "ACTION", function()
+		local selected_index = iup.GetInt(cast_spell_select, "VALUE")
+		if selected_index then
+			local spell_id = spell_indexes[selected_index]
+			local level = iup.GetInt(cast_spell_level, "VALUE") or 1
+			local mastery = iup.GetInt(cast_spell_mastery, "VALUE") or 1
+
+			if spell_id and utils.CastSpellDirect(spell_id, level, mastery) then
+				return iup.CLOSE
+			end
+		end
+		return iup.DEFAULT
+	end)
 
 	-- ACTIVE SPELLS (PARTY BUFF)
 	reload_spell_list_options()
@@ -325,26 +323,23 @@ function M.firstload()
 end
 
 function M.create()
-	-- Create CAST SPELL frame (MM8/Merge-only)
-	local cast_spell_frame
-	if Game.Version == 8 then
-		cast_spell_select = ui.select {}
+	-- Create CAST SPELL frame
+	cast_spell_select = ui.select {}
 
-		local level_label = ui.label(i18n._("level"))
-		cast_spell_level = ui.uint_input(60, {
-			SPINMAX = 255,
-			SPINMIN = 1,
-			SIZE = "40x"
-		})
-		cast_spell_mastery = ui.select(utils.get_mastery_array(true), 4)
-		cast_spell_button = ui.button(i18n._("ok"), nil, {
-			MINSIZE = "80x",
-			FGCOLOR = ui.apply_exit_button_color
-		})
+	local level_label = ui.label(i18n._("level"))
+	cast_spell_level = ui.uint_input(60, {
+		SPINMAX = 255,
+		SPINMIN = 1,
+		SIZE = "40x"
+	})
+	cast_spell_mastery = ui.select(utils.get_mastery_array(true), utils.mm6or78(3, 4))
+	cast_spell_button = ui.button(i18n._("ok"), nil, {
+		MINSIZE = "80x",
+		FGCOLOR = ui.apply_exit_button_color
+	})
 
-		cast_spell_frame = ui.frame(i18n._("cast_any_spell"), ui.hbox(
-			{ cast_spell_select, level_label, cast_spell_level, cast_spell_mastery, cast_spell_button }))
-	end
+	local cast_spell_frame = ui.frame(i18n._("cast_any_spell"), ui.hbox(
+		{ cast_spell_select, level_label, cast_spell_level, cast_spell_mastery, cast_spell_button }))
 
 	-- ACTIVE SPELLS (PARTY BUFF)
 	spell_list = ui.list({}, nil, {
@@ -400,10 +395,8 @@ function M.create()
 		ui.hbox({ armageddon_checkbox, divine_checkbox, unlimited_daily_cast_ok_button }))
 
 	local frames = {}
-	if Game.Version == 8 then
-		table.insert(frames, cast_spell_frame)
-		table.insert(frames, ui.hbox())
-	end
+	table.insert(frames, cast_spell_frame)
+	table.insert(frames, ui.hbox())
 	table.insert(frames, party_buff_frame)
 	table.insert(frames, ui.hbox())
 	table.insert(frames, unlimited_daily_cast_frame)
